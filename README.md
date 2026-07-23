@@ -1,5 +1,8 @@
 # Digital Affiliate Manager — Admin Panel
 
+> **⚠️ MASIH TAHAP DEV / BELUM PRODUCTION-READY**  
+> Proyek ini masih dalam tahap pengembangan aktif. Fitur dan struktur dapat berubah sewaktu-waktu.
+
 Multi-user admin panel for managing personas, content, and backend services. Bun + Hono + TSX + Tailwind CSS + SQLite.
 
 ## Quick Start
