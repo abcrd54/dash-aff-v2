@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f1f5f9;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+.htmx-indicator {
+  display: none;
+}
+.htmx-request .htmx-indicator {
+  display: inline-block;
+}
+.htmx-request.htmx-indicator {
+  display: inline-block;
+}
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-2.5 text-sidebar-text rounded-lg transition-all duration-200 text-sm font-medium;
+}
+.sidebar-link:hover {
+  @apply bg-sidebar-hover text-sidebar-textActive;
+}
+.sidebar-link.active {
+  @apply bg-sidebar-active text-sidebar-textActive;
+}
+
+.responsive-table {
+  @apply w-full text-sm;
+}
+.responsive-table thead {
+  @apply hidden lg:table-header-group;
+}
+.responsive-table tbody tr {
+  @apply block lg:table-row border-b border-slate-100 lg:border-b-0;
+}
+.responsive-table td {
+  @apply block lg:table-cell px-4 lg:px-6 py-2 lg:py-4;
+}
+.responsive-table td::before {
+  content: attr(data-label);
+  @apply block lg:hidden text-xs font-medium text-slate-500 mb-1;
+}
+.responsive-table th {
+  @apply hidden lg:table-cell text-left px-6 py-3 text-slate-600 font-medium;
+}
