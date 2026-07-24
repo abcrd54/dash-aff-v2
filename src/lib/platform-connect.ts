@@ -21,30 +21,59 @@ export function getPlatformList(): readonly string[] {
   return PLATFORMS;
 }
 
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...init, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getOAuthUrl(
   apiKey: string,
   teamId: string,
   platform: string,
   redirectUrl: string
 ): Promise<string> {
-  const platformType = platform.toLowerCase();
-  const res = await fetch("https://api.bundle.social/api/v1/social-account/connect", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
+  const platformUpper = platform.toUpperCase();
+  const body = { type: platformUpper, teamId, redirectUrl };
+
+  // Primary: Custom UI flow — POST /api/v1/social-account/connect
+  const res1 = await fetchWithTimeout(
+    "https://api.bundle.social/api/v1/social-account/connect",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+      body: JSON.stringify(body),
     },
-    body: JSON.stringify({
-      type: platformType,
-      teamId,
-      redirectUrl,
-    }),
-  });
-  const json = await res.json() as { url?: string; message?: string };
-  if (!json.url) {
-    throw new Error(json.message || `Failed to get OAuth URL for ${platformType}`);
-  }
-  return json.url;
+  );
+  const t1 = await res1.text();
+  let j1: any;
+  try { j1 = JSON.parse(t1); } catch { j1 = {}; }
+  if (res1.ok && j1.url) return j1.url;
+
+  // Fallback: Hosted flow — POST /api/v1/social-account/create-portal-link
+  const res2 = await fetchWithTimeout(
+    "https://api.bundle.social/api/v1/social-account/create-portal-link",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+      body: JSON.stringify({ teamId, socialAccountTypes: [platformUpper], redirectUrl }),
+    },
+  );
+  const t2 = await res2.text();
+  let j2: any;
+  try { j2 = JSON.parse(t2); } catch { j2 = {}; }
+  if (res2.ok && j2.url) return j2.url;
+
+  throw new Error(
+    `Bundle API: teamId=${teamId.slice(0, 8)}... ` +
+    `connect(${res1.status}): ${j1.message || j1.error || t1.slice(0, 60)} ` +
+    `portal(${res2.status}): ${j2.message || j2.error || t2.slice(0, 60)}`
+  );
 }
 
 export async function* massConnectPlatform(
