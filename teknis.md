@@ -466,29 +466,17 @@ GET /api/session/status
 - Tidak ada OTP / 2FA
 - Tidak ada audit log
 
-### Target: Better Auth
+### Target: ganti ke library **Better Auth**
 
 | Fitur | Status |
 |-------|:------:|
 | Email OTP sign-in | 🔜 |
 | Username + password (fallback) | 🔜 |
-| Rate limiting (max 3 OTP attempt) | 🔜 |
+| Rate limiting (max 3 OTP attempt, auto expired) | 🔜 |
 | Role-based (admin / user) | 🔜 |
 | Session management (auto cookies) | 🔜 |
 | SQLite adapter (bun:sqlite) | 🔜 |
 | Hono integration (official) | 🔜 |
-
-### Rencana Implementasi
-
-```
-1. Install: bun add better-auth
-2. Buat:  src/lib/auth.ts (konfigurasi better-auth)
-3. Update: src/index.tsx (mount auth handler)
-4. Update: middleware/auth.ts (ganti ke session better-auth)
-5. Update: views/login.tsx (email → OTP → verify)
-6. Hapus: JWT manual (createToken, verifyToken)
-7. Migrasi: user DB ke schema better-auth
-```
 
 ### Flow Baru
 
@@ -498,50 +486,7 @@ Reset:  email → kirim OTP → input OTP + password baru
 Logout: hapus session
 ```
 
-### Auth Config (src/lib/auth.ts)
-
-```ts
-import { betterAuth } from "better-auth";
-import { emailOTP } from "better-auth/plugins";
-import { getDB } from "../db";
-
-export const auth = betterAuth({
-  database: getDB(),
-  emailAndPassword: { enabled: true },
-  plugins: [
-    emailOTP({
-      async sendVerificationOTP({ email, otp, type }) {
-        // Kirim OTP via email service
-        // type: "sign-in" | "email-verification" | "forget-password"
-      },
-    }),
-  ],
-});
-```
-
-### Handler (src/index.tsx)
-
-```ts
-import { auth } from "./lib/auth";
-
-app.all("/api/auth/*", (c) => auth.handler(c.req.raw));
-```
-
-### Middleware (ganti authMiddleware)
-
-```ts
-import { auth } from "../lib/auth";
-
-export async function sessionMiddleware(c: Context, next: Next) {
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
-  if (!session) return c.redirect("/login");
-  c.set("user", session.user);
-  c.set("session", session);
-  await next();
-}
-```
+Better Auth sudah menyediakan semua fitur di atas built-in — tinggal install, konfigurasi, dan ganti middleware auth.
 
 ---
 
