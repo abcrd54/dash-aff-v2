@@ -374,9 +374,13 @@ export interface SocialConnection {
   platform: string;
   social_account_id: string | null;
   username: string | null;
+  channel_id: string | null;
+  channel_name: string | null;
+  channels: string | null;
   status: string;
   error: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export function getConnection(accountId: number, platform: string): SocialConnection | undefined {
@@ -401,7 +405,15 @@ export function createConnection(accountId: number, platform: string): SocialCon
 export function updateConnection(
   accountId: number,
   platform: string,
-  data: { status?: string; social_account_id?: string; username?: string; error?: string }
+  data: {
+    status?: string;
+    social_account_id?: string;
+    username?: string;
+    channel_id?: string;
+    channel_name?: string;
+    channels?: string;
+    error?: string;
+  }
 ): void {
   const sets: string[] = [];
   const values: (string | number)[] = [];
@@ -409,12 +421,23 @@ export function updateConnection(
   if (data.status !== undefined) { sets.push("status = ?"); values.push(data.status); }
   if (data.social_account_id !== undefined) { sets.push("social_account_id = ?"); values.push(data.social_account_id); }
   if (data.username !== undefined) { sets.push("username = ?"); values.push(data.username); }
+  if (data.channel_id !== undefined) { sets.push("channel_id = ?"); values.push(data.channel_id); }
+  if (data.channel_name !== undefined) { sets.push("channel_name = ?"); values.push(data.channel_name); }
+  if (data.channels !== undefined) { sets.push("channels = ?"); values.push(data.channels); }
   if (data.error !== undefined) { sets.push("error = ?"); values.push(data.error); }
 
   if (sets.length === 0) return;
+  sets.push("updated_at = datetime('now')");
   values.push(accountId, platform);
 
   getDB()
     .query(`UPDATE social_connections SET ${sets.join(", ")} WHERE account_id = ? AND platform = ?`)
     .run(...values);
+}
+
+export function deleteConnection(accountId: number, platform: string): boolean {
+  const result = getDB()
+    .query("DELETE FROM social_connections WHERE account_id = ? AND platform = ?")
+    .run(accountId, platform);
+  return result.changes > 0;
 }

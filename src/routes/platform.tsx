@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { getAffiliateAccounts, getConnectionsByAccount, updateAffiliateAccount } from "../lib/db";
-import { getPlatformList, massConnectPlatform } from "../lib/platform-connect";
-import { parseCookies } from "../lib/puppeteer";
+import { getAffiliateAccounts, getConnectionsByAccount, updateAffiliateAccount, getConnection, createConnection } from "../lib/db";
+import { getPlatformList, createPortalLink, checkAndSyncConnection, syncChannel, syncDisconnect, platformNeedsChannel } from "../lib/platform-connect";
 import PlatformConnectPage from "../views/platform/connect";
 
 const platformRoutes = new Hono();
@@ -26,48 +25,112 @@ platformRoutes.get("/platform/connect", authMiddleware, (c) => {
   );
 });
 
-platformRoutes.post("/platform/connect/stream", authMiddleware, async (c) => {
+platformRoutes.post("/api/platform/portal", authMiddleware, async (c) => {
   const user = getSession(c)!;
-  const body = await c.req.parseBody();
+  const body = await c.req.json();
+  const accountId = Number(body.accountId);
   const platform = String(body.platform || "").toUpperCase();
-  const accountIdsStr = String(body.accountIds || "");
-  const cookies = String(body.cookies || "");
 
-  if (!platform || !accountIdsStr || !cookies) {
-    return c.json({ success: false, error: "Platform, accountIds, and cookies required" }, 400);
+  if (!accountId || !platform) {
+    return c.json({ error: "accountId and platform required" }, 400);
+  }
+
+  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  if (!account || !account.api_key || !account.team_id) {
+    return c.json({ error: "Account not ready" }, 400);
+  }
+
+  let conn = getConnection(accountId, platform);
+  if (!conn) {
+    conn = createConnection(accountId, platform);
   }
 
   try {
-    parseCookies(cookies, platform);
-  } catch {
-    return c.json({ success: false, error: "Invalid cookie format" }, 400);
+    const redirectUrl = `${process.env.APP_URL || "http://localhost:4000"}/platform/connect`;
+    const portalUrl = await createPortalLink(account.api_key, account.team_id, platform, redirectUrl);
+    return c.json({ url: portalUrl });
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
+});
+
+platformRoutes.post("/api/platform/check-status", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+  const accountId = Number(body.accountId);
+  const platform = String(body.platform || "").toUpperCase();
+
+  if (!accountId || !platform) {
+    return c.json({ error: "accountId and platform required" }, 400);
   }
 
-  const accountIds = accountIdsStr.split(",").map(Number).filter((n) => !isNaN(n));
+  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  if (!account || !account.api_key || !account.team_id) {
+    return c.json({ error: "Account not ready" }, 400);
+  }
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      try {
-        for await (const event of massConnectPlatform(user.id, platform, accountIds, cookies)) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
-        }
-      } catch (e: any) {
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ accountIndex: 0, accountName: "System", step: "error", status: "failed", detail: e.message })}\n\n`)
-        );
-      }
-      controller.close();
-    },
-  });
+  try {
+    const result = await checkAndSyncConnection(accountId, account.api_key, account.team_id, platform);
+    const conn = getConnection(accountId, platform);
+    return c.json({
+      status: result.status,
+      channels: result.channels,
+      username: result.username,
+      connection: conn,
+      needsChannel: platformNeedsChannel(platform),
+    });
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
+});
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
+platformRoutes.post("/api/platform/set-channel", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+  const accountId = Number(body.accountId);
+  const platform = String(body.platform || "").toUpperCase();
+  const channelId = String(body.channelId || "");
+  const channelName = String(body.channelName || "");
+
+  if (!accountId || !platform || !channelId) {
+    return c.json({ error: "accountId, platform, and channelId required" }, 400);
+  }
+
+  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  if (!account || !account.api_key || !account.team_id) {
+    return c.json({ error: "Account not ready" }, 400);
+  }
+
+  try {
+    await syncChannel(accountId, account.api_key, account.team_id, platform, channelId, channelName);
+    const conn = getConnection(accountId, platform);
+    return c.json({ success: true, connection: conn });
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
+});
+
+platformRoutes.post("/api/platform/disconnect", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+  const accountId = Number(body.accountId);
+  const platform = String(body.platform || "").toUpperCase();
+
+  if (!accountId || !platform) {
+    return c.json({ error: "accountId and platform required" }, 400);
+  }
+
+  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  if (!account || !account.api_key || !account.team_id) {
+    return c.json({ error: "Account not ready" }, 400);
+  }
+
+  try {
+    await syncDisconnect(accountId, account.api_key, account.team_id, platform);
+    return c.json({ success: true });
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
 });
 
 platformRoutes.post("/platform/connect/identity", authMiddleware, async (c) => {

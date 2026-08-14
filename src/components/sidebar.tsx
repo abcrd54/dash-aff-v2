@@ -67,7 +67,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath }) => {
             <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-sm">
               BA
             </div>
-            <span class="text-white font-semibold text-base">Barokah Aff</span>
+            <span class="text-white font-semibold text-base">Dashboard Management Affiliate</span>
           </div>
           <button
             x-on:click="sidebarOpen = false"

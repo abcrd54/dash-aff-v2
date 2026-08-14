@@ -68,7 +68,11 @@ CREATE TABLE IF NOT EXISTS social_connections (
   platform TEXT NOT NULL,
   social_account_id TEXT,
   username TEXT,
+  channel_id TEXT,
+  channel_name TEXT,
+  channels TEXT,
   status TEXT NOT NULL DEFAULT 'pending',
   error TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

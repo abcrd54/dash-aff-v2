@@ -11,7 +11,7 @@ const LoginPage: FC<LoginProps> = ({ error }) => {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Login — Barokah Aff</title>
+        <title>Login — Dashboard Management Affiliate</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -32,7 +32,7 @@ const LoginPage: FC<LoginProps> = ({ error }) => {
               <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <span class="text-white font-bold text-xl">BA</span>
               </div>
-              <h1 class="text-2xl font-bold text-slate-900">Barokah Aff</h1>
+              <h1 class="text-2xl font-bold text-slate-900">Dashboard Management Affiliate</h1>
               <p class="text-slate-500 text-sm mt-1">Silakan login untuk melanjutkan</p>
             </div>
 

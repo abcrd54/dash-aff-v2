@@ -1,0 +1,44 @@
+[server]
+bind_addr = "0.0.0.0:3010"
+request_timeout_seconds = 30
+cors_allowed_origins = []
+enable_docs = false
+
+[auth]
+api_keys = ["jn9cPQyK3z7Gym7uYdLhxYsyzJErncyB0nHrBUyoUo"]
+bearer_tokens = []
+auth_failure_rate_limit_rpm = 30
+
+[mailbox]
+providers = ["emailmux", "emailnator"]
+rate_limit_rpm = 60
+session_ttl_seconds = 86400
+max_sessions = 1000
+
+[upstream]
+max_concurrency = 64
+proxy_url = ""
+
+[emailmux]
+public_base_url = "https://emailmux.com"
+generate_path = "/generate-email"
+use_email_path = "/use-email"
+emails_path = "/emails"
+timeout_seconds = 15
+impit_http3 = true
+impit_fallback_to_vanilla = true
+api_signing_secret = "yjd683c@47"
+max_detail_bytes = 1048576
+max_json_bytes = 524288
+allow_insecure_url = false
+
+[emailnator]
+public_base_url = "https://www.emailnator.com"
+generate_path = "/generate-email"
+message_list_path = "/message-list"
+timeout_seconds = 15
+impit_http3 = true
+impit_fallback_to_vanilla = false
+max_detail_bytes = 1048576
+max_json_bytes = 524288
+allow_insecure_url = false

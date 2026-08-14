@@ -1,13 +1,6 @@
-import { getAffiliateAccounts, getConnection, createConnection, updateConnection, type AffiliateAccount } from "./db";
-import { runOAuthFlow, parseCookies } from "./puppeteer";
+import { getConnection, createConnection, updateConnection, deleteConnection } from "./db";
 
-interface BatchEvent {
-  accountIndex: number;
-  accountName: string;
-  step: string;
-  status: string;
-  detail?: string;
-}
+const BUNDLE_API = "https://api.bundle.social/api/v1";
 
 const PLATFORMS = [
   "TWITTER", "FACEBOOK", "INSTAGRAM", "TIKTOK", "THREADS",
@@ -21,123 +14,205 @@ export function getPlatformList(): readonly string[] {
   return PLATFORMS;
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 10000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { ...init, signal: controller.signal });
-    return res;
-  } finally {
-    clearTimeout(timer);
-  }
+const NEEDS_CHANNEL: Record<string, boolean> = {
+  FACEBOOK: true,
+  INSTAGRAM: true,
+  LINKEDIN: true,
+  YOUTUBE: true,
+  GOOGLE_BUSINESS: true,
+};
+
+export function platformNeedsChannel(platform: string): boolean {
+  return NEEDS_CHANNEL[platform.toUpperCase()] || false;
 }
 
-async function getOAuthUrl(
+async function bundleFetch(
+  path: string,
+  init: RequestInit & { apiKey: string; teamId?: string }
+): Promise<any> {
+  const { apiKey, teamId, ...fetchInit } = init;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-api-key": apiKey,
+    ...(fetchInit.headers as Record<string, string> || {}),
+  };
+
+  const url = `${BUNDLE_API}${path}`;
+  const res = await fetch(url, { ...fetchInit, headers });
+  const text = await res.text();
+  let json: any;
+  try { json = JSON.parse(text); } catch { json = {}; }
+
+  if (!res.ok) {
+    throw new Error(json.message || json.error || `Bundle API error ${res.status}`);
+  }
+
+  return json;
+}
+
+export async function createPortalLink(
   apiKey: string,
   teamId: string,
   platform: string,
   redirectUrl: string
 ): Promise<string> {
-  const platformUpper = platform.toUpperCase();
-  const body = { type: platformUpper, teamId, redirectUrl };
-
-  // Primary: Custom UI flow — POST /api/v1/social-account/connect
-  const res1 = await fetchWithTimeout(
-    "https://api.bundle.social/api/v1/social-account/connect",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
-      body: JSON.stringify(body),
-    },
-  );
-  const t1 = await res1.text();
-  let j1: any;
-  try { j1 = JSON.parse(t1); } catch { j1 = {}; }
-  if (res1.ok && j1.url) return j1.url;
-
-  // Fallback: Hosted flow — POST /api/v1/social-account/create-portal-link
-  const res2 = await fetchWithTimeout(
-    "https://api.bundle.social/api/v1/social-account/create-portal-link",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey },
-      body: JSON.stringify({ teamId, socialAccountTypes: [platformUpper], redirectUrl }),
-    },
-  );
-  const t2 = await res2.text();
-  let j2: any;
-  try { j2 = JSON.parse(t2); } catch { j2 = {}; }
-  if (res2.ok && j2.url) return j2.url;
-
-  throw new Error(
-    `Bundle API: teamId=${teamId.slice(0, 8)}... ` +
-    `connect(${res1.status}): ${j1.message || j1.error || t1.slice(0, 60)} ` +
-    `portal(${res2.status}): ${j2.message || j2.error || t2.slice(0, 60)}`
-  );
+  const json = await bundleFetch("/social-account/create-portal-link", {
+    method: "POST",
+    apiKey,
+    body: JSON.stringify({
+      teamId,
+      redirectUrl,
+      socialAccountTypes: [platform.toUpperCase()],
+      withBusinessScope: true,
+    }),
+  });
+  return json.url;
 }
 
-export async function* massConnectPlatform(
-  userId: number,
+export async function getSocialAccount(
+  apiKey: string,
+  teamId: string,
+  platform: string
+): Promise<{
+  id: string;
+  type: string;
+  username: string;
+  channels: Array<{ id: string; name: string; type?: string }>;
+  channelId: string | null;
+  channelName: string | null;
+} | null> {
+  try {
+    const json = await bundleFetch(
+      `/social-account/by-type?type=${platform.toUpperCase()}&teamId=${teamId}`,
+      { method: "GET", apiKey }
+    );
+    return json.socialAccount || json.data || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setChannel(
+  apiKey: string,
+  teamId: string,
   platform: string,
-  accountIds: number[],
-  cookies: string
-): AsyncGenerator<BatchEvent> {
-  const accounts = getAffiliateAccounts(userId).filter((a) =>
-    accountIds.includes(a.id) && a.status === "done" && a.team_id && a.api_key
-  );
+  channelId: string
+): Promise<void> {
+  await bundleFetch("/social-account/set-channel", {
+    method: "POST",
+    apiKey,
+    body: JSON.stringify({
+      type: platform.toUpperCase(),
+      teamId,
+      channelId,
+    }),
+  });
+}
 
-  let connected = 0;
-  let failed = 0;
+export async function refreshChannels(
+  apiKey: string,
+  teamId: string,
+  platform: string
+): Promise<void> {
+  await bundleFetch("/social-account/refresh-channels", {
+    method: "POST",
+    apiKey,
+    body: JSON.stringify({
+      type: platform.toUpperCase(),
+      teamId,
+    }),
+  });
+}
 
-  const parsedCookies = parseCookies(cookies, platform);
+export async function disconnectSocialAccount(
+  apiKey: string,
+  teamId: string,
+  platform: string
+): Promise<void> {
+  await bundleFetch("/social-account/disconnect", {
+    method: "DELETE",
+    apiKey,
+    body: JSON.stringify({
+      type: platform.toUpperCase(),
+      teamId,
+    }),
+  });
+}
 
-  for (let i = 0; i < accounts.length; i++) {
-    const acc = accounts[i];
-    const idx = i + 1;
+export async function checkAndSyncConnection(
+  accountId: number,
+  apiKey: string,
+  teamId: string,
+  platform: string
+): Promise<{ status: string; channels?: any[]; username?: string }> {
+  const sa = await getSocialAccount(apiKey, teamId, platform);
 
-    const existing = getConnection(acc.id, platform);
-    if (existing && existing.status === "connected") {
-      yield { accountIndex: idx, accountName: acc.name, step: "skip", status: "done", detail: "Already connected" };
-      connected++;
-      continue;
+  if (!sa) {
+    const conn = getConnection(accountId, platform);
+    if (conn && conn.status === "connected") {
+      updateConnection(accountId, platform, { status: "disconnected" });
     }
-
-    let conn = existing;
-    if (!conn) {
-      conn = createConnection(acc.id, platform);
-    }
-
-    yield { accountIndex: idx, accountName: acc.name, step: "oauth", status: "running", detail: "Getting OAuth URL..." };
-
-    try {
-      const redirectUrl = `https://bundle.social/dashboard?teamId=${acc.team_id}`;
-      const oauthUrl = await getOAuthUrl(acc.api_key!, acc.team_id!, platform, redirectUrl);
-
-      yield { accountIndex: idx, accountName: acc.name, step: "oauth", status: "running", detail: "Opening OAuth..." };
-
-      const result = await runOAuthFlow(oauthUrl, parsedCookies, platform);
-
-      if (result.success) {
-        updateConnection(acc.id, platform, {
-          status: "connected",
-          social_account_id: result.socialAccountId || null,
-          username: result.username || null,
-        });
-        yield { accountIndex: idx, accountName: acc.name, step: "connect", status: "done", detail: "Connected" };
-        connected++;
-      } else {
-        updateConnection(acc.id, platform, { status: "failed", error: result.error });
-        yield { accountIndex: idx, accountName: acc.name, step: "connect", status: "failed", detail: result.error || "OAuth failed" };
-        failed++;
-      }
-    } catch (e: any) {
-      updateConnection(acc.id, platform, { status: "failed", error: e.message });
-      yield { accountIndex: idx, accountName: acc.name, step: "error", status: "failed", detail: e.message };
-      failed++;
-    }
-
-    await new Promise((r) => setTimeout(r, 2000));
+    return { status: "not_connected" };
   }
 
-  yield { accountIndex: 0, accountName: "System", step: "complete", status: "done", detail: `${connected} connected, ${failed} failed` };
+  const needsChannel = platformNeedsChannel(platform);
+  const hasChannel = sa.channelId && sa.channelName;
+
+  if (needsChannel && !hasChannel) {
+    updateConnection(accountId, platform, {
+      status: "connected",
+      social_account_id: sa.id,
+      username: sa.username,
+      channels: JSON.stringify(sa.channels || []),
+    });
+    return {
+      status: "needs_channel",
+      channels: sa.channels || [],
+      username: sa.username,
+    };
+  }
+
+  updateConnection(accountId, platform, {
+    status: "connected",
+    social_account_id: sa.id,
+    username: sa.username,
+    channel_id: sa.channelId,
+    channel_name: sa.channelName,
+    channels: JSON.stringify(sa.channels || []),
+  });
+
+  return {
+    status: "connected",
+    channels: sa.channels || [],
+    username: sa.username,
+  };
+}
+
+export async function syncChannel(
+  accountId: number,
+  apiKey: string,
+  teamId: string,
+  platform: string,
+  channelId: string,
+  channelName: string
+): Promise<void> {
+  await setChannel(apiKey, teamId, platform, channelId);
+  updateConnection(accountId, platform, {
+    channel_id: channelId,
+    channel_name: channelName,
+  });
+}
+
+export async function syncDisconnect(
+  accountId: number,
+  apiKey: string,
+  teamId: string,
+  platform: string
+): Promise<void> {
+  try {
+    await disconnectSocialAccount(apiKey, teamId, platform);
+  } catch {
+    // disconnect might fail if already disconnected, that's ok
+  }
+  deleteConnection(accountId, platform);
 }

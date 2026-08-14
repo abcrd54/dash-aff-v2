@@ -35,6 +35,26 @@ export function initDB(): void {
   } catch {
     // column already exists
   }
+  try {
+    database.exec("ALTER TABLE social_connections ADD COLUMN channel_id TEXT");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE social_connections ADD COLUMN channel_name TEXT");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE social_connections ADD COLUMN channels TEXT");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE social_connections ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))");
+  } catch {
+    // column already exists
+  }
 }
 
 export async function seedAdmin(): Promise<void> {
