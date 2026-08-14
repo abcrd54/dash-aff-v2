@@ -1,0 +1,326 @@
+================================================================================
+  SECURITY HARDENING GUIDE — Dashboard Management Affiliate
+  Based on: teknis.md
+================================================================================
+
+
+1. WAF (Web Application Firewall)
+--------------------------------------------------------------------------------
+Layer:    Reverse proxy / edge (Nginx, Cloudflare, Bun)
+Fungsi:   Filter malicious traffic sebelum masuk ke aplikasi
+
+Setup:
+  - Cloudflare (free) → auto WAF rules, DDoS protection
+  - Nginx reverse proxy → mod_security, rate limiting
+  - Bun built-in → trustedProxy, request size limit
+
+
+2. DDoS Protection
+--------------------------------------------------------------------------------
+Layer:    Edge + Application
+Fungsi:   Cegah traffic flood
+
+Setup:
+  - Cloudflare DDoS protection (free, auto)
+  - Rate limiting per IP (Bun/Hono middleware)
+  - Request size limit: max 10MB body
+  - Connection timeout: 30s
+  - Max concurrent connections per IP
+
+
+3. SSL/TLS & HTTPS
+--------------------------------------------------------------------------------
+Layer:    Transport
+Fungsi:   Enkripsi traffic client <-> server
+
+Setup:
+  - Cloudflare SSL (free, auto-renew)
+  - Let's Encrypt + Certbot (self-managed)
+  - Hono: redirect HTTP -> HTTPS
+  - Minimum TLS 1.2, prefer TLS 1.3
+  - HSTS header: max-age=31536000; includeSubDomains; preload
+
+
+4. Security Headers
+--------------------------------------------------------------------------------
+Layer:    HTTP Response
+Fungsi:   Perintah ke browser untuk membatasi perilaku
+
+di Hono middleware:
+  Content-Security-Policy:   default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'
+  X-Content-Type-Options:    nosniff
+  X-Frame-Options:           DENY
+  X-XSS-Protection:          1; mode=block
+  Referrer-Policy:           strict-origin-when-cross-origin
+  Permissions-Policy:        camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+
+5. CSP (Content Security Policy)
+--------------------------------------------------------------------------------
+Layer:    Browser
+Fungsi:   Batasi sumber daya yang bisa dimuat halaman
+
+Setup (Hono middleware):
+  - default-src 'self' — hanya load dari origin sendiri
+  - script-src 'self' — block inline script kecuali explicit
+  - style-src 'self' 'unsafe-inline' — izinkan Tailwind inline
+  - img-src 'self' data: https: — izinkan gambar external
+  - connect-src 'self' ws: wss: — izinkan WebSocket
+  - frame-ancestors 'none' — cegah iframe embed
+  - Report-Only mode dulu untuk testing, lalu enforce
+
+
+6. CSRF Protection
+--------------------------------------------------------------------------------
+Layer:    Application
+Fungsi:   Cegah cross-site request forgery
+
+Setup:
+  - Hono: CSRF middleware (built-in atau hono/csrf)
+  - Token di setiap form POST/PUT/DELETE
+  - SameSite=Strict pada cookies
+  - Origin/Referer header check
+  - Custom header requirement untuk AJAX (X-Requested-With)
+
+
+7. XSS Protection
+--------------------------------------------------------------------------------
+Layer:    Application + Browser
+Fungsi:   Cegah cross-site scripting
+
+Setup:
+  - TSX auto-escape semua output (Hono JSX aman)
+  - Jangan pakai raw() kecuali trusted
+  - CSP header (no inline script)
+  - Input validation: strip HTML tags dari user input
+  - Sanitasi URL parameter sebelum render
+
+
+8. SQL Injection Protection
+--------------------------------------------------------------------------------
+Layer:    Database
+Fungsi:   Cegah SQL injection
+
+Setup:
+  - bun:sqlite pakai parameterized queries (aman by default)
+  - JANGAN string concatenation untuk query
+  - Semua query pakai ? placeholder
+  - Validate input type sebelum query (number, string, etc)
+  - Gunakan query builder jika memungkinkan
+
+
+9. Input Validation & Sanitization
+--------------------------------------------------------------------------------
+Layer:    Application
+Fungsi:   Validasi semua input user
+
+Setup:
+  - Hono: Zod / Valibot integration untuk route validation
+  - Sanitasi: strip HTML, trim whitespace, enforce max length
+  - Type coercion: pastikan number adalah number
+  - White-list approach: tolak kecuali explicitly allowed
+  - Regex validation untuk email, URL, slug
+
+
+10. Authentication & MFA
+--------------------------------------------------------------------------------
+Layer:    Application
+Fungsi:   Verifikasi identitas user
+
+Setup:
+  - Better Auth: email OTP (MFA via email)
+  - Password policy: min 8 char, 1 uppercase, 1 number, 1 special
+  - Rate limit login: max 5 attempt / 15 menit per IP
+  - Account lockout: setelah 5x gagal -> kunci 15 menit
+  - Audit log: catat semua login attempt
+
+
+11. Secure Session Management
+--------------------------------------------------------------------------------
+Layer:    Application
+Fungsi:   Kelola session user dengan aman
+
+Setup:
+  - Better Auth: auto-handle session cookies
+  - Cookie: httpOnly, Secure, SameSite=Strict
+  - Session expiry: 24 jam (configurable)
+  - Session ID: random, min 128-bit entropy
+  - Rotate session ID after login
+  - Invalidate session on logout / password change
+  - No session in URL / localStorage
+
+
+12. Access Control & RBAC
+--------------------------------------------------------------------------------
+Layer:    Application
+Fungsi:   Batasi akses berdasarkan role
+
+Setup:
+  - adminMiddleware: hanya admin bisa akses /admin/*
+  - authMiddleware: semua user harus login
+  - Resource ownership: user hanya lihat/edit data sendiri
+  - Better Auth: role field di user table
+  - Principle of least privilege: user hanya bisa apa yang dibutuhkan
+
+
+13. Rate Limiting
+--------------------------------------------------------------------------------
+Layer:    Application + Edge
+Fungsi:   Batasi request per waktu
+
+Setup:
+  - Cloudflare: rate limiting rules (free tier)
+  - Hono: rate limiter middleware
+  - Login: 5 req / 15 menit per IP
+  - API: 60 req / menit per user
+  - SSE: 1 concurrent stream per user
+  - General: 100 req / menit per IP
+
+
+14. Bot Protection
+--------------------------------------------------------------------------------
+Layer:    Edge + Application
+Fungsi:   Cegah bot / scraper
+
+Setup:
+  - Cloudflare Bot Management (free)
+  - Honeypot fields di form (hidden input, bot akan isi)
+  - reCAPTCHA / hCaptcha di login page
+  - User-agent check
+  - Request timing analysis (terlalu cepat = bot)
+
+
+15. API Security
+--------------------------------------------------------------------------------
+Layer:    Application
+Fungsi:   Amankan API endpoints
+
+Setup:
+  - Semua API route wajib auth (authMiddleware)
+  - API key rotation untuk external service
+  - Request body size limit
+  - Timeout: 30s untuk semua API call
+  - CORS: whitelist origin, bukan wildcard
+  - Response: jangan expose stack trace di error
+  - Log semua API call (method, path, status, duration)
+
+
+16. Secure Cookies
+--------------------------------------------------------------------------------
+Layer:    HTTP
+Fungsi:   Amankan cookie session
+
+Setup:
+  - httpOnly: true (tidak bisa diakses JS)
+  - secure: true (hanya via HTTPS)
+  - sameSite: "Strict" (cegah CSRF)
+  - path: "/" (tersedia di semua route)
+  - maxAge: 86400 (24 jam)
+  - domain: explicit, jangan wildcard
+  - Prefix: __Host- untuk binding ke domain
+
+
+17. Database Security
+--------------------------------------------------------------------------------
+Layer:    Data
+Fungsi:   Amankan data di SQLite
+
+Setup:
+  - WAL mode (sudah enabled)
+  - Foreign keys ON (sudah enabled)
+  - File permission: 600 (hanya owner read/write)
+  - Backup: daily cron job ke external storage
+  - No raw SQL in logs
+  - Encrypt sensitive columns (password_hash sudah bcrypt)
+  - Vacuum secara berkala
+
+
+18. Encryption
+--------------------------------------------------------------------------------
+Layer:    Data
+Fungsi:   Enkripsi data sensitif
+
+Setup:
+  - Password: bcrypt (sudah diterapkan)
+  - API keys / tokens: AES-256-GCM encryption at rest
+  - Session data: encrypted di DB
+  - JWT: HS256 (Better Auth handle)
+  - Environment variables: .env tidak di-commit ke git
+  - TLS 1.3 untuk data in transit
+
+
+19. Secrets Management
+--------------------------------------------------------------------------------
+Layer:    Infrastructure
+Fungsi:   Kelola secrets dengan aman
+
+Setup:
+  - .env file: local development only
+  - Production: environment variables via Docker / systemd
+  - JANGAN hardcode secrets di source code
+  - JANGAN commit .env ke git (sudah di .gitignore)
+  - Rotate secrets secara berkala
+  - Gunakan vault/secret manager untuk production
+
+
+20. Secure Backups
+--------------------------------------------------------------------------------
+Layer:    Data
+Fungsi:   Backup data dengan aman
+
+Setup:
+  - Daily backup SQLite (cron job)
+  - Backup dienkripsi sebelum disimpan
+  - Simpan di lokasi berbeda (external storage / cloud)
+  - Retensi: 7 hari terakhir
+  - Test restore secara berkala
+  - Backup automation: script / Docker volume backup
+
+
+21. Logging & Monitoring
+--------------------------------------------------------------------------------
+Layer:    Observability
+Fungsi:   Lacak aktivitas dan deteksi anomali
+
+Setup:
+  - Login attempts: success + failure + IP + timestamp
+  - API calls: method, path, status, duration, user
+  - Error logs: stack trace (jangan expose ke client)
+  - Rate limit events: catat saat user di-rate-limit
+  - Security events: failed auth, invalid token, CSRF block
+  - Log format: structured JSON
+  - Log retention: 30 hari
+  - Monitoring: health check endpoint, uptime alert
+
+
+================================================================================
+  SECURITY CHECKLIST
+================================================================================
+
+ 1. WAF (Cloudflare / Nginx)                  [ COMING ]
+ 2. DDoS Protection                           [ COMING ]
+ 3. SSL/TLS + HTTPS                           [ COMING ]
+ 4. Security Headers                          [ COMING ]
+ 5. Content Security Policy                   [ COMING ]
+ 6. CSRF Protection                           [ COMING ]
+ 7. XSS Protection                            [ DONE - TSX auto-escape ]
+ 8. SQL Injection Protection                  [ DONE - parameterized queries ]
+ 9. Input Validation                          [ COMING ]
+10. Authentication + MFA                      [ COMING - Better Auth ]
+11. Secure Session Management                 [ COMING - Better Auth ]
+12. Access Control (RBAC)                     [ DONE - adminMiddleware ]
+13. Rate Limiting                             [ COMING ]
+14. Bot Protection                            [ COMING ]
+15. API Security (auth + CORS)                [ COMING ]
+16. Secure Cookies                            [ COMING - Better Auth ]
+17. Database Security                         [ DONE - WAL, FK, bcrypt ]
+18. Encryption                                [ DONE - bcrypt ]
+19. Secrets Management                        [ DONE - .env, .gitignore ]
+20. Secure Backups                            [ COMING ]
+21. Logging & Monitoring                      [ COMING ]
+
+
+================================================================================
+  END OF SECURITY HARDENING GUIDE
+================================================================================
