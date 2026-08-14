@@ -1,278 +1,258 @@
 ================================================================================
-  BLUEPRINT — Dashboard Management Affiliate
-  Strategi & Alur Sistem
+  BLUEPRINT - Dashboard Management Affiliate
 ================================================================================
 
 
 TUJUAN UTAMA
---------------------------------------------------------------------------------
-Sistem all-in-one untuk management post, konten, dan share link affiliate di
-social media. Dari membuat akun, menghubungkan platform, generate konten dengan
-link affiliate, sampai auto posting — semua dalam satu dashboard.
+------------
+Sistem all-in-one untuk management post, konten, dan share link affiliate
+di social media. Dari membuat akun, menghubungkan platform, generate konten
+dengan link affiliate, sampai auto posting.
 
 
 GAMBARAN BESAR
---------------------------------------------------------------------------------
-[1] Buat Akun Bunsocial
-[2] Hubungkan Platform
-[3] Generate Konten + Link Affiliate
-[4] Auto Post
+--------------
+4 langkah utama:
+  1. Buat Akun Bunsocial
+  2. Hubungkan Platform
+  3. Generate Konten + Link Affiliate
+  4. Auto Post
 
-DUA JALUR KONTEN:
-  Jalur A: Akun Persona (sentuhan manusia)
-           AI caption by persona identity -> Generate gambar -> Auto post
-
-  Jalur B: Akun Scraping (full otomatis)
-           Scrape berita Detik -> Generate caption -> Generate gambar -> Auto post
+Dua jalur konten:
+  A. Akun Persona (sentuhan manusia)
+     AI caption by persona -> Generate gambar -> Auto post
+  B. Akun Scraping (full otomatis)
+     Scrape berita -> Generate caption -> Generate gambar -> Auto post
 
 
 APA ITU BUNDLE SOCIAL?
---------------------------------------------------------------------------------
-Bundle Social adalah platform agregator social media. Kita TIDAK PERLU pakai API
-masing-masing platform (Facebook API, X API, Instagram API, dll). Cukup hubungkan
-akun ke Bundle Social, lalu semua posting dilakukan lewat Bundle Social.
+----------------------
+Platform agregator social media. TIDAK PERLU pakai API masing-masing
+platform (Facebook, X, Instagram, dll). Cukup hubungkan ke Bundle Social,
+lalu semua posting dilakukan lewat Bundle Social.
 
-  Facebook ---\
-  X ------------> Bundle Social ---> Dashboard Management
-  Instagram ---/
+  Facebook, X, Instagram, dll  -->  Bundle Social  -->  Dashboard
 
-Batasan: 1 akun Bunsocial = maksimal 20 post/bulan di Bundle Social.
+Batasan: 1 akun Bunsocial = maksimal 20 post/bulan.
 
 
-KENAPA BUTUH BANYAK AKUN BUNSOCIAL?
---------------------------------------------------------------------------------
-Karena batasan 20 post/bulan, satu "nama akun platform" butuh banyak akun.
+KENAPA BUTUH BANYAK AKUN?
+-------------------------
+Karena batasan 20 post/bulan, satu nama akun butuh banyak Bunsocial.
 
-  Nama Akun: Info Dunia
-    Bunsocial #1 -> 20 post/bulan
-    Bunsocial #2 -> 20 post/bulan
-    Bunsocial #3 -> 20 post/bulan
-    Bunsocial #4 -> 20 post/bulan
-    Total: 80 post/bulan untuk "Info Dunia"
+  Info Dunia:
+    Bunsocial #1 -> 20 post
+    Bunsocial #2 -> 20 post
+    Bunsocial #3 -> 20 post
+    Bunsocial #4 -> 20 post
+    Total: 80 post/bulan
+
+Satu postingan dikirim ke semua Bunsocial dalam grup yang sama via
+Bundle Social, sehingga reach-out lebih besar.
 
 
-DUA JENIS AKUN SOSIAL MEDIA
---------------------------------------------------------------------------------
+DUA JENIS AKUN
+--------------
 
 A. Akun Persona (Sentuhan Manusia)
-   Akun dengan identitas seperti orang asli — hobi, kesukaan, kepribadian.
-   Contoh: Maya Putri — hobi naik gunung, fotografi, traveling
+   Akun dengan identitas seperti orang asli.
+   Contoh: Maya Putri - hobi naik gunung, fotografi, traveling.
 
-   Alur: AI Generate Caption (by persona) -> Review & edit -> Generate gambar
-         -> Review & approve -> Auto post
-
-   Status: Caption DONE | Generate gambar COMING | Auto post COMING
+   Alur: AI Caption -> Review & edit -> Generate gambar -> Approve -> Post
+   Status: Caption DONE | Gambar COMING | Post COMING
 
 B. Akun Scraping (Full Otomatis)
-   Akun yang kontennya dari scraping berita — semua data disediakan.
-   Contoh: Info Dunia — sumber Detik.com
+   Konten dari scraping berita, semua data sudah disediakan.
+   Contoh: Info Dunia - sumber Detik.com.
 
-   Alur: Scrape berita -> AI caption -> AI gambar -> Auto post (full otomatis)
+   Alur: Scrape -> AI Caption -> AI Gambar -> Post (full otomatis)
+   Status: COMING SOON
 
-   Status: COMING SOON (flow & arsitektur)
 
-
-AI GENERATION — jadiapa.com
---------------------------------------------------------------------------------
-jadiapa.com adalah platform penyedia model AI untuk generate konten. Dashboard
-terhubung langsung ke jadiapa.com untuk semua kebutuhan AI.
+AI GENERATION - jadiapa.com
+---------------------------
+Platform penyedia model AI untuk generate konten. Dashboard terhubung
+langsung ke jadiapa.com.
 
 Layanan:
-  - Generate Gambar: AI bikin gambar dari prompt    [COMING]
-  - Generate Video:  AI bikin video pendek          [COMING]
+  - Generate Gambar: AI bikin gambar dari prompt   [COMING]
+  - Generate Video:  AI bikin video pendek         [COMING]
 
-Integrasi Dashboard:
-  Saldo, pemakaian, top up, generate — semua dari dalam dashboard.
+Dashboard panel: saldo, pemakaian, top up, generate - semua dari dalam
 
-Scraping jadiapa.com:
-  - Saldo              -> Tampilkan sisa saldo
-  - Riwayat pemakaian  -> Lacak pemakaian
-  - Harga per generate -> Hitung biaya
-  - Status top up      -> Konfirmasi pembayaran
+Scraping data:
+  - Saldo              -> tampilkan sisa saldo
+  - Riwayat pemakaian  -> lacak konsumsi
+  - Harga per generate -> hitung biaya
+  - Status top up      -> konfirmasi
 
-Flow Generate:
-  User input prompt -> Cek saldo -> Submit generate -> Tunggu hasil -> Tampilkan
+Flow: Input prompt -> Cek saldo -> Submit -> Tunggu hasil -> Tampilkan
 
 
-LINK AFFILIATE — Jantung Sistem
---------------------------------------------------------------------------------
-Setiap konten yang diposting harus mengandung link affiliate (Shopee, Tokopedia).
-Link affiliate adalah sumber monetisasi.
+LINK AFFILIATE - Jantung Sistem
+-------------------------------
+Setiap konten harus mengandung link affiliate (Shopee, Tokopedia).
+Sumber monetisasi dari klik & pembelian.
 
-Dua Cara Input:
-  1. Manual:  User input link -> Scrape data produk -> AI generate caption
-  2. Otomatis: Scrape dashboard affiliate -> Pilih produk terbaik -> Generate
+Dua cara input:
+  1. Manual     -> input link -> scrape produk -> AI caption
+  2. Otomatis   -> scrape dashboard -> pilih produk -> generate
 
-Dua Jenis Scraping Shopee:
-  - Scraping Produk:             Nama, harga, deskripsi, gambar
-  - Scraping Dashboard Affiliate: Views, klik, komisi, produk trending
+Dua jenis scraping Shopee:
+  - Scraping Produk    : nama, harga, deskripsi, gambar
+    (dipakai semua jalur)
+  - Scraping Dashboard : views, klik, komisi, trending
+    (hanya jalur otomatis)
 
-Penempatan Link Affiliate:
+Penempatan link:
+
   Opsi A: Link di Caption
-    "Sepatu hiking ini nyaman! Cek: https://s.shopee.co.id/xxx"
+    "Sepatu ini nyaman! Cek: https://s.shopee.co.id/xxx"
     Cocok: X, Threads, TikTok, Pinterest
 
-  Opsi B: Link di Komentar (caption natural, tanpa sebut "cek komentar")
+  Opsi B: Link di Komentar (caption natural)
     Caption:  "Sepatu hiking ini nyaman banget! Cocok buat pemula..."
-    Komentar: "Yang mau sepatu hiking berkualitas https://s.shopee.co.id/xxx"
-    Cocok: FB, Instagram (tidak kena penalti algoritma)
+    Komentar: "Yang mau sepatu hiking https://s.shopee.co.id/xxx"
+    Cocok: FB, Instagram (aman, gak kena penalti algoritma)
 
-  Platform           Link di Caption    Link di Komentar
-  Facebook           Reach turun        AMAN
-  Instagram          Reach turun        AMAN
-  X (Twitter)        Normal             Bisa
-  TikTok             Normal             Bisa
-  Threads            Normal             Bisa
-  Pinterest          Normal             Bisa
-
-  Default: Link di komentar (lebih aman). Bisa dikonfigurasi per platform.
+  Default: komentar (lebih aman), bisa dikonfigurasi per platform.
 
 
 ALUR UTAMA
---------------------------------------------------------------------------------
+----------
 
 1. BUAT AKUN BUNSOCIAL
-   Input:  Jumlah akun + Nama akun (Info Dunia, Info Bisnis, dll)
-   Proses: Generate email -> Register -> Verifikasi -> Setup profil
-           -> Generate API key -> Buat team
-   Output: Akun Bunsocial siap pakai (API key + team ID)
+   Input:  Jumlah + Nama akun (Info Dunia, dll)
+   Proses: Email disposable -> Register -> Verifikasi -> Setup
+           -> API Key -> Buat Team
+   Output: Akun siap pakai (API key + team ID)
 
 2. HUBUNGKAN PLATFORM
    Input:  Akun Bunsocial
-   Proses: Pilih platform (FB,IG,X,TK,Threads,Pin) -> OAuth Bundle Social
-           -> Login & izinkan -> Pilih Page/Channel -> Verifikasi
-   Output: Akun terhubung ke platform via Bundle Social
+   Proses: Pilih platform -> OAuth Bundle Social -> Login
+           -> Pilih Page/Channel -> Verifikasi
+   Output: Akun terhubung ke platform (FB,IG,X,TK,Threads,Pin)
 
-3. GENERATE KONTEN — Jalur A (Persona)
+3. GENERATE KONTEN - Jalur A (Persona)
    Input:  Persona + Topik + Link Affiliate
-   Proses: Pilih link (manual/auto) -> AI caption by persona identity
-           -> Review & edit -> Generate gambar -> Review & approve
-   Output: Konten siap posting (caption + link + gambar)
+   Proses: Pilih link -> AI caption by persona -> Review
+           -> Generate gambar -> Approve
+   Output: Konten siap posting
 
-4. GENERATE KONTEN — Jalur B (Scraping)
+4. GENERATE KONTEN - Jalur B (Scraping)
    Input:  Niche + Sumber berita + Link Affiliate
-   Proses: Scrape berita -> Scrape dashboard affiliate -> AI caption
+   Proses: Scrape berita -> Scrape dashboard -> AI caption
            -> AI gambar -> Full otomatis
-   Output: Konten siap posting (caption + link + gambar)
+   Output: Konten siap posting
 
 5. AUTO POST
    Input:  Nama akun + Konten
-   Proses: Pilih grup -> Semua Bunsocial dalam grup terpilih
-           -> Post via Bundle Social -> Distribusi ke semua platform
-   Output: Konten terposting ke semua platform dalam grup
+   Proses: Pilih grup -> Semua Bunsocial terpilih -> Post via Bundle
+   Output: Konten terposting ke semua platform
 
 6. SCHEDULE POSTING [COMING]
-   Input:  Konten + Jadwal
-   Proses: Sistem tentukan jadwal optimal -> Posting otomatis
-           -> Delay 1-5 menit antar akun -> Bisa override manual
+   Jadwal otomatis sesuai prime time, delay 1-5 menit antar akun
 
-   Prime Time (Sprout Social 2026 - 2 miliar engagement):
-   Platform       Waktu Terbaik       Hari Terbaik      Hari Terburuk
-   Facebook       12:00 - 20:00       Selasa, Rabu      Akhir pekan
-   Instagram      12:00 - 21:00       Selasa, Rabu      Akhir pekan
-   X (Twitter)    12:00 - 18:00       Selasa - Kamis    Akhir pekan
-   TikTok         13:00 - 20:00       Rabu, Kamis       Akhir pekan
-   Threads        12:00 - 18:00       Selasa - Kamis    Akhir pekan
-   Pinterest      10:00 - 13:00       Selasa - Kamis    Akhir pekan
-   Catatan: Hari Minggu adalah hari terburuk di semua platform.
+   Prime Time (Sprout Social 2026, 2 miliar engagement):
+   - Facebook  : 12-20 WIB, Selasa-Rabu
+   - Instagram : 12-21 WIB, Selasa-Rabu
+   - X/Twitter : 12-18 WIB, Selasa-Kamis
+   - TikTok    : 13-20 WIB, Rabu-Kamis
+   - Threads   : 12-18 WIB, Selasa-Kamis
+   - Pinterest : 10-13 WIB, Selasa-Kamis
+   - Minggu = hari terburuk di semua platform
 
-7. AUTO RETRY PRODUK BAGUS [COMING]
-   Input:  Data performa dari dashboard affiliate
-   Proses: Analisis views & klik -> Produk views tinggi -> auto repost
-           -> Produk sepi -> berhenti
-   Output: Produk best-performing terus dipromosikan
+7. AUTO RETRY [COMING]
+   Analisis views & klik -> Produk bagus auto repost -> Produk sepi stop
 
 
-KONSEP GRUP (by Nama Akun Platform)
---------------------------------------------------------------------------------
-Akun dikelompokkan berdasarkan nama akun platform, bukan kategori.
-
-  Info Dunia
+KONSEP GRUP (by Nama Akun)
+--------------------------
+  Info Dunia:
     Bunsocial #1 -> FB, IG, X           (20 post)
     Bunsocial #2 -> FB, IG, TikTok      (20 post)
     Bunsocial #3 -> FB, IG, Pinterest   (20 post)
     Bunsocial #4 -> FB, X, Threads      (20 post)
     Total: 80 post/bulan
 
-  Info Bisnis
+  Info Bisnis:
     Bunsocial #5 -> FB, IG, X           (20 post)
     Bunsocial #6 -> FB, TikTok          (20 post)
     Total: 40 post/bulan
 
-Satu postingan dikirim ke semua Bunsocial dalam grup yang sama via Bundle Social.
-
 
 ARSITEKTUR LAYANAN
---------------------------------------------------------------------------------
+------------------
   Dashboard (Port 4000)
-    aff-personal (3000)    -> AI Personas, Chat, LLM
-    Kumux Mail (3010)      -> Disposable Email
-    Bunsocial API          -> Register & Auth akun
-    Bundle Social API      -> OAuth Platform + Posting
-    jadiapa.com            -> Generate Gambar + Video
-    Shopee (scrape)        -> Data produk + dashboard affiliate
-    Detik (scrape)         -> Berita trending
+    - aff-personal (3000)    -> AI Personas, Chat, LLM
+    - Kumux Mail (3010)      -> Disposable Email
+    - Bunsocial API          -> Register & Auth akun
+    - Bundle Social API      -> OAuth Platform + Posting
+    - jadiapa.com            -> Generate Gambar + Video
+    - Shopee (scrape)        -> Data produk + affiliate
+    - Detik (scrape)         -> Berita trending
 
 
 STATUS FITUR
---------------------------------------------------------------------------------
-  Fitur                                           Status        Jalur
-  Buat Akun Bunsocial                             DONE          -
-  Hubungkan Platform via Bundle Social            DONE          -
-  Persona AI (CRUD + Chat)                        DONE          A
-  AI Generate Caption (by persona)                DONE          A
-  Input Link Affiliate Manual                     DONE          A+B
-  Scraping Shopee - Produk                        COMING        A+B
-  Scraping Shopee - Dashboard Affiliate           COMING        A+B
-  Scraping jadiapa.com (saldo, pemakaian)         COMING        A+B
-  AI Generate Gambar (via jadiapa.com)            COMING        A+B
-  AI Generate Video (via jadiapa.com)             COMING        A+B
-  Scrape Berita (Detik, dsb)                      COMING        B
-  AI Caption dari Berita                          COMING        B
-  Auto Post via Bundle Social                     COMING        A+B
-  Schedule Posting (jadwal otomatis)              COMING        A+B
-  Auto Retry Produk Bagus (views tinggi->repost)  COMING        A+B
-  Content Management                              DONE          -
-  Multi-user + Admin                              DONE          -
+------------
+  DONE:
+    Buat Akun Bunsocial
+    Hubungkan Platform via Bundle Social
+    Persona AI (CRUD + Chat)
+    AI Generate Caption (by persona)
+    Input Link Affiliate Manual
+    Content Management
+    Multi-user + Admin
+
+  COMING:
+    Scraping Shopee - Produk
+    Scraping Shopee - Dashboard Affiliate
+    Scraping jadiapa.com (saldo, pemakaian)
+    AI Generate Gambar (via jadiapa.com)
+    AI Generate Video (via jadiapa.com)
+    Scrape Berita (Detik, dsb)
+    AI Caption dari Berita
+    Auto Post via Bundle Social
+    Schedule Posting
+    Auto Retry Produk Bagus
 
 
-BLUEPRINT MASA DEPAN: Jalur A (Persona)
---------------------------------------------------------------------------------
-  Persona + Topik
-    -> Pilih Link Affiliate (manual / auto scrape)
-    -> AI Generate Caption (by persona identity)           [DONE]
-    -> User Review & Edit Caption                          [DONE]
-    -> AI Generate Gambar (via jadiapa.com)                [COMING]
-    -> User Review & Approve
-    -> Auto Post via Bundle Social                         [COMING]
-    -> FB, IG, X, TikTok, Threads, Pinterest
+BLUEPRINT MASA DEPAN
+--------------------
+
+Jalur A (Persona):
+  Persona + Topik -> Pilih Link (manual/auto)
+  -> AI Caption (by persona) [DONE]
+  -> Review & Edit [DONE]
+  -> AI Generate Gambar (jadiapa.com) [COMING]
+  -> Review & Approve
+  -> Auto Post via Bundle [COMING]
+  -> FB, IG, X, TikTok, Threads, Pinterest
+
+Jalur B (Scraping):
+  Scrape Berita Detik -> Scrape Dashboard Affiliate
+  -> Cek Saldo jadiapa -> AI Caption (berita + link)
+  -> AI Generate Gambar (jadiapa.com)
+  -> Auto Post via Bundle (full otomatis) [COMING]
+  -> FB, IG, X, TikTok, Threads, Pinterest
 
 
-BLUEPRINT MASA DEPAN: Jalur B (Scraping)
---------------------------------------------------------------------------------
-  Scrape Berita Detik (per niche)
-    -> Scrape Dashboard Affiliate (Shopee)
-    -> Scrape jadiapa.com (cek saldo)
-    -> AI Generate Caption (dari isi berita + link aff)
-    -> AI Generate Gambar (via jadiapa.com)
-    -> Auto Post via Bundle Social (full otomatis)         [COMING]
-    -> FB, IG, X, TikTok, Threads, Pinterest
+PERBANDINGAN
+------------
+  Jalur A (Persona):
+    - Sumber: identitas persona (hobi, gaya)
+    - Link: manual / auto scrape
+    - Caption: AI by persona identity
+    - Gambar: jadiapa.com
+    - Review: manual (sentuhan manusia)
+    - Cocok: personal branding, rekomendasi
+    - Status: Caption DONE, sisanya COMING
 
-
-PERBANDINGAN DUA JALUR
---------------------------------------------------------------------------------
-  Aspek              Jalur A (Persona)          Jalur B (Scraping)
-  Sumber konten      Identitas persona          Berita Detik
-  Link Affiliate     Manual / Auto scrape       Auto scrape dashboard
-  Penempatan Link    Caption / Komentar         Default: Komentar
-  Caption            AI by persona identity     AI by artikel berita
-  Gambar             jadiapa.com                jadiapa.com
-  Video              jadiapa.com                jadiapa.com
-  Review             Manual (sentuhan manusia)  Full otomatis
-  Cocok untuk        Personal branding          Berita, info trending
-  Status             Caption DONE               Semua COMING
-
-
-================================================================================
-  END OF BLUEPRINT
-================================================================================
+  Jalur B (Scraping):
+    - Sumber: berita Detik (judul, isi)
+    - Link: auto scrape dashboard
+    - Caption: AI by artikel berita
+    - Gambar: jadiapa.com
+    - Review: full otomatis
+    - Cocok: berita, info trending
+    - Status: semua COMING (flow siap)
