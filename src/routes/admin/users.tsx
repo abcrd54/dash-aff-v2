@@ -18,26 +18,19 @@ adminUserRoutes.post("/admin/users", authMiddleware, adminMiddleware, async (c) 
   const username = String(body.username || "").trim();
   const password = String(body.password || "");
 
-  console.log("[CREATE USER]", { username, passwordLen: password.length });
-
   if (!username || !password || password.length < 6) {
-    console.log("[CREATE USER] Validation failed:", { username, passwordLen: password.length });
     return c.redirect("/admin/users?error=" + encodeURIComponent("Username dan password minimal 6 karakter"));
   }
 
   const existing = getUserByUsername(username);
   if (existing) {
-    console.log("[CREATE USER] Username already exists:", username);
     return c.redirect("/admin/users?error=" + encodeURIComponent("Username sudah digunakan"));
   }
 
   try {
     const passwordHash = await Bun.password.hash(password, "bcrypt");
-    console.log("[CREATE USER] Hash created, inserting user...");
-    const newUser = createUser(username, passwordHash, "user");
-    console.log("[CREATE USER] User created:", { id: newUser.id, username: newUser.username });
+    createUser(username, passwordHash, "user");
   } catch (e) {
-    console.error("[CREATE USER] Error:", e);
     return c.redirect("/admin/users?error=" + encodeURIComponent("Gagal membuat user"));
   }
 

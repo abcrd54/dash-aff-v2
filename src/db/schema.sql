@@ -19,14 +19,6 @@ CREATE TABLE IF NOT EXISTS posts (
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS content (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  key TEXT UNIQUE NOT NULL,
-  title TEXT NOT NULL,
-  body TEXT NOT NULL DEFAULT '',
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
 CREATE TABLE IF NOT EXISTS user_personas (
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   persona_id TEXT NOT NULL,
@@ -75,4 +67,62 @@ CREATE TABLE IF NOT EXISTS social_connections (
   error TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS affiliate_products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  name TEXT NOT NULL DEFAULT '',
+  price TEXT,
+  description TEXT,
+  images TEXT,
+  variants TEXT,
+  views INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  commission TEXT,
+  placement TEXT NOT NULL DEFAULT 'comment',
+  last_scraped_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS social_posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  group_name TEXT NOT NULL DEFAULT '',
+  caption TEXT NOT NULL DEFAULT '',
+  comment TEXT NOT NULL DEFAULT '',
+  link TEXT NOT NULL DEFAULT '',
+  image TEXT,
+  placement TEXT NOT NULL DEFAULT 'comment',
+  persona_id TEXT,
+  status TEXT NOT NULL DEFAULT 'draft',
+  sent_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS jadiapa_config (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  api_key TEXT,
+  balance TEXT NOT NULL DEFAULT '0',
+  usage_images INTEGER DEFAULT 0,
+  usage_videos INTEGER DEFAULT 0,
+  last_checked_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS group_auto_post_config (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  identity TEXT NOT NULL,
+  niche TEXT NOT NULL DEFAULT '',
+  auto_post_enabled INTEGER NOT NULL DEFAULT 0,
+  auto_generate_enabled INTEGER NOT NULL DEFAULT 0,
+  daily_post_count INTEGER NOT NULL DEFAULT 5,
+  start_time TEXT NOT NULL DEFAULT '12:00',
+  use_default_schedule INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(user_id, identity)
 );

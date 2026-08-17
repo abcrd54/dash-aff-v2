@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "trap 'kill 0' EXIT; npx tailwindcss -i ./src/input.css -o ./public/css/main.css --minify --watch & bun run --watch src/index.tsx",
-    "build:css": "npx tailwindcss -i ./src/input.css -o ./public/css/main.css --minify",
-    "start": "bun run src/index.tsx"
+"dev": "trap 'kill 0' EXIT; bunx tailwindcss -i ./src/input.css -o ./public/css/main.css --minify --watch & bun run --watch src/index.tsx",
+"build:css": "bunx tailwindcss -i ./src/input.css -o ./public/css/main.css --minify",
+    "start": "bun run build:css && bun run src/index.tsx"
   },
   "dependencies": {
     "hono": "^4.6.14",
     "puppeteer": "^24.0.0",
-    "tailwindcss": "^3.4.19"
+    "tailwindcss": "3"
   },
   "devDependencies": {
     "@types/bun": "^1.1.14"

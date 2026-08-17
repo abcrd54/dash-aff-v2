@@ -19,14 +19,6 @@ export interface Post {
   updated_at: string;
 }
 
-export interface Content {
-  id: number;
-  key: string;
-  title: string;
-  body: string;
-  updated_at: string;
-}
-
 export function getUserByUsername(
   username: string
 ): (User & { password_hash: string }) | undefined {
@@ -164,68 +156,6 @@ export function updatePost(
 
 export function deletePost(id: number): boolean {
   const result = getDB().query("DELETE FROM posts WHERE id = ?").run(id);
-  return result.changes > 0;
-}
-
-export function getAllContent(): Content[] {
-  return getDB()
-    .query("SELECT * FROM content ORDER BY id DESC")
-    .all() as Content[];
-}
-
-export function getContentByKey(key: string): Content | undefined {
-  return getDB()
-    .query("SELECT * FROM content WHERE key = ?")
-    .get(key) as Content | undefined;
-}
-
-export function getContentById(id: number): Content | undefined {
-  return getDB()
-    .query("SELECT * FROM content WHERE id = ?")
-    .get(id) as Content | undefined;
-}
-
-export function createContent(key: string, title: string, body: string): Content {
-  const result = getDB()
-    .query("INSERT INTO content (key, title, body) VALUES (?, ?, ?)")
-    .run(key, title, body);
-  return getContentById(Number(result.lastInsertRowid))!;
-}
-
-export function updateContent(
-  id: number,
-  data: { key?: string; title?: string; body?: string }
-): Content | undefined {
-  const sets: string[] = [];
-  const values: (string | number)[] = [];
-
-  if (data.key !== undefined) {
-    sets.push("key = ?");
-    values.push(data.key);
-  }
-  if (data.title !== undefined) {
-    sets.push("title = ?");
-    values.push(data.title);
-  }
-  if (data.body !== undefined) {
-    sets.push("body = ?");
-    values.push(data.body);
-  }
-
-  if (sets.length === 0) return getContentById(id);
-
-  sets.push("updated_at = datetime('now')");
-  values.push(id);
-
-  getDB()
-    .query(`UPDATE content SET ${sets.join(", ")} WHERE id = ?`)
-    .run(...values);
-
-  return getContentById(id);
-}
-
-export function deleteContent(id: number): boolean {
-  const result = getDB().query("DELETE FROM content WHERE id = ?").run(id);
   return result.changes > 0;
 }
 
@@ -440,4 +370,229 @@ export function deleteConnection(accountId: number, platform: string): boolean {
     .query("DELETE FROM social_connections WHERE account_id = ? AND platform = ?")
     .run(accountId, platform);
   return result.changes > 0;
+}
+
+// ==================== AFFILIATE PRODUCTS ====================
+
+export interface AffiliateProduct {
+  id: number;
+  user_id: number;
+  url: string;
+  name: string;
+  price: string | null;
+  description: string | null;
+  images: string | null;
+  variants: string | null;
+  views: number;
+  clicks: number;
+  commission: string | null;
+  placement: string;
+  last_scraped_at: string | null;
+  created_at: string;
+}
+
+export function getAffiliateProducts(userId: number): AffiliateProduct[] {
+  return getDB()
+    .query("SELECT * FROM affiliate_products WHERE user_id = ? ORDER BY id DESC")
+    .all(userId) as AffiliateProduct[];
+}
+
+export function getAffiliateProductById(id: number): AffiliateProduct | undefined {
+  return getDB()
+    .query("SELECT * FROM affiliate_products WHERE id = ?")
+    .get(id) as AffiliateProduct | undefined;
+}
+
+export function createAffiliateProduct(data: {
+  user_id: number;
+  url: string;
+  name: string;
+  price?: string;
+  description?: string;
+  images?: string;
+  placement?: string;
+}): AffiliateProduct {
+  const result = getDB()
+    .query(
+      "INSERT INTO affiliate_products (user_id, url, name, price, description, images, placement) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    )
+    .run(data.user_id, data.url, data.name, data.price || null, data.description || null, data.images || null, data.placement || "comment");
+  return getAffiliateProductById(Number(result.lastInsertRowid))!;
+}
+
+export function deleteAffiliateProduct(id: number): boolean {
+  const result = getDB()
+    .query("DELETE FROM affiliate_products WHERE id = ?")
+    .run(id);
+  return result.changes > 0;
+}
+
+// ==================== SOCIAL POSTS ====================
+
+export interface SocialPost {
+  id: number;
+  user_id: number;
+  group_name: string;
+  caption: string;
+  comment: string;
+  link: string;
+  image: string | null;
+  placement: string;
+  persona_id: string | null;
+  status: string;
+  sent_at: string | null;
+  created_at: string;
+}
+
+export function getSocialPosts(userId: number): SocialPost[] {
+  return getDB()
+    .query("SELECT * FROM social_posts WHERE user_id = ? ORDER BY id DESC")
+    .all(userId) as SocialPost[];
+}
+
+export function getSocialPostById(id: number): SocialPost | undefined {
+  return getDB()
+    .query("SELECT * FROM social_posts WHERE id = ?")
+    .get(id) as SocialPost | undefined;
+}
+
+export function createSocialPost(data: {
+  user_id: number;
+  group_name: string;
+  caption: string;
+  comment?: string;
+  link?: string;
+  placement?: string;
+  persona_id?: string;
+}): SocialPost {
+  const result = getDB()
+    .query(
+      "INSERT INTO social_posts (user_id, group_name, caption, comment, link, placement, persona_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'draft')"
+    )
+    .run(data.user_id, data.group_name, data.caption, data.comment || "", data.link || "", data.placement || "comment", data.persona_id || null);
+  return getSocialPostById(Number(result.lastInsertRowid))!;
+}
+
+export function deleteSocialPost(id: number): boolean {
+  const result = getDB()
+    .query("DELETE FROM social_posts WHERE id = ?")
+    .run(id);
+  return result.changes > 0;
+}
+
+// ==================== JADIAPA ====================
+
+export interface JadiapaConfig {
+  id: number;
+  user_id: number;
+  api_key: string | null;
+  balance: string;
+  usage_images: number;
+  usage_videos: number;
+  last_checked_at: string | null;
+  created_at: string;
+}
+
+export function getJadiapaConfig(userId: number): JadiapaConfig | undefined {
+  return (
+    getDB()
+      .query("SELECT * FROM jadiapa_config WHERE user_id = ?")
+      .get(userId) as JadiapaConfig | undefined
+  );
+}
+
+export function ensureJadiapaConfig(userId: number): JadiapaConfig {
+  let config = getJadiapaConfig(userId);
+  if (!config) {
+    getDB()
+      .query("INSERT INTO jadiapa_config (user_id, balance) VALUES (?, '0')")
+      .run(userId);
+    config = getJadiapaConfig(userId)!;
+  }
+  return config;
+}
+
+// ==================== GROUP AUTO POST CONFIG ====================
+
+export interface GroupAutoPostConfig {
+  id: number;
+  user_id: number;
+  identity: string;
+  niche: string;
+  auto_post_enabled: number;
+  auto_generate_enabled: number;
+  daily_post_count: number;
+  start_time: string;
+  use_default_schedule: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function getGroupAutoPostConfigs(userId: number): GroupAutoPostConfig[] {
+  return getDB()
+    .query("SELECT * FROM group_auto_post_config WHERE user_id = ? ORDER BY identity")
+    .all(userId) as GroupAutoPostConfig[];
+}
+
+export function getGroupAutoPostConfig(userId: number, identity: string): GroupAutoPostConfig | undefined {
+  return getDB()
+    .query("SELECT * FROM group_auto_post_config WHERE user_id = ? AND identity = ?")
+    .get(userId, identity) as GroupAutoPostConfig | undefined;
+}
+
+export function ensureGroupAutoPostConfig(userId: number, identity: string): GroupAutoPostConfig {
+  let config = getGroupAutoPostConfig(userId, identity);
+  if (!config) {
+    getDB()
+      .query("INSERT INTO group_auto_post_config (user_id, identity) VALUES (?, ?)")
+      .run(userId, identity);
+    config = getGroupAutoPostConfig(userId, identity)!;
+  }
+  return config;
+}
+
+export function updateGroupAutoPostConfig(
+  userId: number,
+  identity: string,
+  data: {
+    niche?: string;
+    auto_post_enabled?: number;
+    auto_generate_enabled?: number;
+    daily_post_count?: number;
+    start_time?: string;
+    use_default_schedule?: number;
+  }
+): void {
+  const sets: string[] = [];
+  const values: (string | number)[] = [];
+
+  if (data.niche !== undefined) { sets.push("niche = ?"); values.push(data.niche); }
+  if (data.auto_post_enabled !== undefined) { sets.push("auto_post_enabled = ?"); values.push(data.auto_post_enabled); }
+  if (data.auto_generate_enabled !== undefined) { sets.push("auto_generate_enabled = ?"); values.push(data.auto_generate_enabled); }
+  if (data.daily_post_count !== undefined) { sets.push("daily_post_count = ?"); values.push(data.daily_post_count); }
+  if (data.start_time !== undefined) { sets.push("start_time = ?"); values.push(data.start_time); }
+  if (data.use_default_schedule !== undefined) { sets.push("use_default_schedule = ?"); values.push(data.use_default_schedule); }
+
+  if (sets.length === 0) return;
+
+  sets.push("updated_at = datetime('now')");
+  values.push(userId, identity);
+
+  getDB()
+    .query(`UPDATE group_auto_post_config SET ${sets.join(", ")} WHERE user_id = ? AND identity = ?`)
+    .run(...values);
+}
+
+export function hasAnyAutoPostEnabled(userId: number): boolean {
+  const row = getDB()
+    .query("SELECT COUNT(*) as cnt FROM group_auto_post_config WHERE user_id = ? AND auto_post_enabled = 1")
+    .get(userId) as { cnt: number } | undefined;
+  return (row?.cnt || 0) > 0;
+}
+
+export function hasAnyAutoGenerateEnabled(userId: number): boolean {
+  const row = getDB()
+    .query("SELECT COUNT(*) as cnt FROM group_auto_post_config WHERE user_id = ? AND auto_generate_enabled = 1")
+    .get(userId) as { cnt: number } | undefined;
+  return (row?.cnt || 0) > 0;
 }

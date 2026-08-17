@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { authMiddleware, getSession, createToken } from "../middleware/auth";
-import { updateUser, getUserByUsername } from "../lib/db";
+import { updateUser, getUserByUsername, ensureJadiapaConfig } from "../lib/db";
 import AccountPage from "../views/account/index";
 import ManageAccountPage from "../views/account/manage";
 
@@ -9,7 +9,24 @@ const accountRoutes = new Hono();
 
 accountRoutes.get("/account", authMiddleware, (c) => {
   const user = getSession(c)!;
-  return c.html(<AccountPage user={user} />);
+  const jadiapa = ensureJadiapaConfig(user.id);
+  const url = new URL(c.req.url);
+  const error = url.searchParams.get("error") || undefined;
+  const success = url.searchParams.get("success") || undefined;
+
+  return c.html(
+    <AccountPage
+      user={user}
+      error={error}
+      success={success}
+      jadiapa={{
+        balance: jadiapa.balance || "0",
+        usageImages: jadiapa.usage_images || 0,
+        usageVideos: jadiapa.usage_videos || 0,
+        lastChecked: jadiapa.last_checked_at || "Belum pernah",
+      }}
+    />
+  );
 });
 
 accountRoutes.post("/account/password", authMiddleware, async (c) => {
@@ -76,7 +93,7 @@ accountRoutes.post("/manage-account", authMiddleware, async (c) => {
 
   setCookie(c, "session", newToken, {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "Lax",
     path: "/",
     maxAge: 86400,

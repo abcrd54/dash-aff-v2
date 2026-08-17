@@ -9,9 +9,11 @@ interface LayoutProps {
   title: string;
   currentPath: string;
   children?: any;
+  autoPostActive?: boolean;
+  autoGenerateActive?: boolean;
 }
 
-const Layout: FC<LayoutProps> = ({ user, title, currentPath, children }) => {
+const Layout: FC<LayoutProps> = ({ user, title, currentPath, children, autoPostActive = false, autoGenerateActive = false }) => {
   return (
     <html lang="id">
       <head>
@@ -65,7 +67,7 @@ const Layout: FC<LayoutProps> = ({ user, title, currentPath, children }) => {
         `)}</script>
       </head>
       <body class="bg-slate-100 min-h-screen">
-        <Sidebar user={user} currentPath={currentPath} />
+        <Sidebar user={user} currentPath={currentPath} autoPostActive={autoPostActive} autoGenerateActive={autoGenerateActive} />
         <div class="lg:ml-[260px] min-h-screen">
           <Navbar user={user} title={title} />
           <main class="p-4 lg:p-6">

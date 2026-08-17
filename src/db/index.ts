@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
 
 const DB_PATH = process.env.DB_PATH || "data/dam.db";
 
@@ -8,6 +8,9 @@ let db: Database;
 
 export function getDB(): Database {
   if (!db) {
+    if (DB_PATH !== ":memory:") {
+      mkdirSync(dirname(DB_PATH), { recursive: true });
+    }
     db = new Database(DB_PATH, { create: true });
     db.exec("PRAGMA journal_mode=WAL");
     db.exec("PRAGMA foreign_keys=ON");
@@ -52,6 +55,21 @@ export function initDB(): void {
   }
   try {
     database.exec("ALTER TABLE social_connections ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE affiliate_products ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE affiliate_products ADD COLUMN placement TEXT NOT NULL DEFAULT 'comment'");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE social_posts ADD COLUMN persona_id TEXT");
   } catch {
     // column already exists
   }

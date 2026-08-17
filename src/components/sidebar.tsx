@@ -5,6 +5,8 @@ import type { JWTPayload } from "../middleware/auth";
 interface SidebarProps {
   user: JWTPayload;
   currentPath: string;
+  autoPostActive: boolean;
+  autoGenerateActive: boolean;
 }
 
 interface SidebarLink {
@@ -12,29 +14,40 @@ interface SidebarLink {
   label: string;
   icon: string;
   children?: SidebarLink[];
+  badge?: string;
+  badgeColor?: string;
 }
 
 const adminLinks: SidebarLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
   { href: "/admin/users", label: "Users", icon: "users" },
+  { href: "/account", label: "Akun Saya", icon: "circle-user-round" },
 ];
 
-const userLinks: SidebarLink[] = [
+const userLinks = (autoPostActive: boolean, autoGenerateActive: boolean): SidebarLink[] => [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
-  { href: "/personas", label: "Akun Personal", icon: "user-round-pen" },
-  { href: "/manage-account", label: "Management Akun", icon: "settings",
+  { href: "/manage-account", label: "Management Bundle Social", icon: "package",
     children: [
       { href: "/create-bunsos", label: "Auto Create Bunsoc", icon: "zap" },
       { href: "/platform/connect", label: "Platform Connect", icon: "plug" },
     ],
   },
-  { href: "/posts", label: "Management Post", icon: "file-text" },
-  { href: "/content", label: "Management Konten", icon: "layers" },
+  { href: "/personas", label: "Akun Personal", icon: "user-round-pen" },
+  { href: "/affiliate-link", label: "Link Affiliate", icon: "link" },
+  { href: "/post", label: "Management Post", icon: "send",
+    badge: autoPostActive ? "Auto Post ON" : "Auto Post OFF",
+    badgeColor: autoPostActive ? "bg-emerald-500" : "bg-slate-400",
+  },
+  { href: "/generate", label: "Generate Konten", icon: "sparkles",
+    badge: autoGenerateActive ? "Auto Scrape ON" : "Auto Scrape OFF",
+    badgeColor: autoGenerateActive ? "bg-emerald-500" : "bg-slate-400",
+  },
+  { href: "/settings", label: "Settings", icon: "sliders-horizontal" },
   { href: "/account", label: "Akun Saya", icon: "circle-user-round" },
 ];
 
-const Sidebar: FC<SidebarProps> = ({ user, currentPath }) => {
-  const links = user.role === "admin" ? adminLinks : userLinks;
+const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGenerateActive }) => {
+  const links = user.role === "admin" ? adminLinks : userLinks(autoPostActive, autoGenerateActive);
 
   return (
     <div x-data="sidebarState">
@@ -116,7 +129,12 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath }) => {
                 x-on:click="closeOnMobile()"
               >
                 <i data-lucide={link.icon} class="w-5 h-5 flex-shrink-0" />
-                <span>{link.label}</span>
+                <span class="flex-1">{link.label}</span>
+                {link.badge && (
+                  <span class={`${link.badgeColor || "bg-slate-400"} text-white text-[9px] px-1.5 py-0.5 rounded-full font-medium leading-none`}>
+                    {link.badge}
+                  </span>
+                )}
               </a>
             );
           })}

@@ -2,15 +2,32 @@ import type { FC } from "hono/jsx";
 import Layout from "../../components/layout";
 import type { JWTPayload } from "../../middleware/auth";
 
-interface AccountPageProps {
-  user: JWTPayload;
+interface JadiapaBalance {
+  balance: string;
+  usageImages: number;
+  usageVideos: number;
+  lastChecked: string;
 }
 
-const AccountPage: FC<AccountPageProps> = ({ user }) => {
+interface AccountPageProps {
+  user: JWTPayload;
+  error?: string;
+  success?: string;
+  jadiapa: JadiapaBalance;
+}
+
+const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa }) => {
   return (
     <Layout user={user} title="Akun Saya" currentPath="/account">
-      <div class="max-w-xl">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <div class="max-w-xl space-y-6">
+        {error && (
+          <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>
+        )}
+        {success && (
+          <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-sm">{success}</div>
+        )}
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <h3 class="text-lg font-semibold text-slate-800 mb-4">Informasi Akun</h3>
           <div class="space-y-3">
             <div class="flex justify-between py-2 border-b border-slate-100">
@@ -23,6 +40,28 @@ const AccountPage: FC<AccountPageProps> = ({ user }) => {
                 {user.role}
               </span>
             </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <h3 class="text-lg font-semibold text-slate-800 mb-4">jadiapa.com</h3>
+          <div class="grid grid-cols-3 gap-3 mb-3">
+            <div class="bg-slate-50 rounded-lg p-3 text-center">
+              <div class="text-lg font-bold text-slate-800">{jadiapa.balance}</div>
+              <div class="text-[10px] text-slate-500">Saldo</div>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-3 text-center">
+              <div class="text-lg font-bold text-blue-600">{jadiapa.usageImages}</div>
+              <div class="text-[10px] text-slate-500">Gambar</div>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-3 text-center">
+              <div class="text-lg font-bold text-purple-600">{jadiapa.usageVideos}</div>
+              <div class="text-[10px] text-slate-500">Video</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400">Terakhir cek: {jadiapa.lastChecked}</span>
+            <a href="/settings" class="text-xs text-blue-600 hover:text-blue-800">Manage & Top Up</a>
           </div>
         </div>
 
