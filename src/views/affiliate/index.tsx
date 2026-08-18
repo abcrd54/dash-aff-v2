@@ -85,9 +85,10 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
             <h3 class="text-sm font-semibold text-slate-700 mb-4">Daftar Akun</h3>
             <div id="accountList">
               {totalCount === 0 ? (
-                <div class="text-center py-8 text-slate-400 text-sm">
-                  <div class="text-3xl mb-2">📭</div>
-                  Belum ada akun yang dibuat
+                <div class="empty-state">
+                  <div class="empty-state-icon">📭</div>
+                  <p class="empty-state-text">Belum ada akun yang dibuat</p>
+                  <p class="text-xs text-slate-400 mb-4">Generate akun Bunsocial otomatis dengan form di atas</p>
                 </div>
               ) : (
                 <div class="space-y-2 max-h-[500px] overflow-y-auto">
@@ -112,12 +113,16 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                         </span>
 </div>
                       {acc.password && acc.status === "done" && (
-                        <div class="mt-1 text-xs text-slate-500 truncate font-mono">Pass: {acc.password}</div>
+                        <div class="mt-1 text-xs text-slate-500 font-mono flex items-center gap-1">
+                          <span>Pass: ********</span>
+                          <button onclick="navigator.clipboard.writeText('{acc.password}');showToast('success','Sukses','Password disalin')" class="text-[10px] text-blue-500 hover:text-blue-700 cursor-pointer">Copy</button>
+                        </div>
                       )}
                       {acc.api_key && acc.status === "done" && (
                         <div class="mt-2 flex flex-wrap gap-1 text-[10px]">
-                          <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                          <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded flex items-center gap-1">
                             Key: {acc.api_key.substring(0, 12)}...
+                            <button onclick="navigator.clipboard.writeText('{acc.api_key}');this.textContent='✓' " class="text-blue-500 hover:text-blue-700 cursor-pointer">Copy</button>
                           </span>
                           {acc.team_id && (
                             <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">

@@ -74,7 +74,10 @@ const PersonaListPage: FC<PersonaListProps> = ({ user, serviceName, personas, er
           <h2 class="text-lg font-semibold text-slate-800">My Personas ({serviceName})</h2>
         </div>
         {personas.length === 0 ? (
-          <div class="p-6 text-center text-slate-500 text-sm">No personas yet. Create one above.</div>
+          <div class="empty-state">
+            <div class="empty-state-icon">👤</div>
+            <p class="empty-state-text">Belum ada persona. Buat persona AI untuk generate konten.</p>
+          </div>
         ) : (
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
             {personas.map((p: any) => (

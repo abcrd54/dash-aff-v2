@@ -128,3 +128,19 @@ CREATE TABLE IF NOT EXISTS group_auto_post_config (
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(user_id, identity)
 );
+
+CREATE TABLE IF NOT EXISTS post_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  group_name TEXT NOT NULL,
+  account_email TEXT NOT NULL,
+  platforms TEXT NOT NULL,
+  caption TEXT,
+  status TEXT NOT NULL DEFAULT 'success',
+  bundle_post_id TEXT,
+  error TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_post_logs_user ON post_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_post_logs_group ON post_logs(group_name);

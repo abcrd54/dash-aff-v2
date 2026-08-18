@@ -26,7 +26,7 @@ const adminLinks: SidebarLink[] = [
 
 const userLinks = (autoPostActive: boolean, autoGenerateActive: boolean): SidebarLink[] => [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
-  { href: "/manage-account", label: "Management Bundle Social", icon: "package",
+  { href: "/create-bunsos", label: "Management Bundle Social", icon: "package",
     children: [
       { href: "/create-bunsos", label: "Auto Create Bunsoc", icon: "zap" },
       { href: "/platform/connect", label: "Platform Connect", icon: "plug" },
@@ -37,6 +37,10 @@ const userLinks = (autoPostActive: boolean, autoGenerateActive: boolean): Sideba
   { href: "/post", label: "Management Post", icon: "send",
     badge: autoPostActive ? "Auto Post ON" : "Auto Post OFF",
     badgeColor: autoPostActive ? "bg-emerald-500" : "bg-slate-400",
+    children: [
+      { href: "/post", label: "Compose & Post", icon: "send" },
+      { href: "/post-logs", label: "Riwayat Post", icon: "history" },
+    ],
   },
   { href: "/generate", label: "Generate Konten", icon: "sparkles",
     badge: autoGenerateActive ? "Auto Scrape ON" : "Auto Scrape OFF",
@@ -50,7 +54,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
   const links = user.role === "admin" ? adminLinks : userLinks(autoPostActive, autoGenerateActive);
 
   return (
-    <div x-data="sidebarState">
+    <div x-data="sidebarState" x-on:close-mobile="closeOnMobile()">
       <div
         x-show="sidebarOpen"
         x-transition:enter="transition-opacity ease-out duration-200"
@@ -97,7 +101,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
               const childActive = link.children.some(c => currentPath.startsWith(c.href));
               const expanded = isParentActive || childActive;
               return (
-                <div x-data={`({ open: ${expanded} })`}>
+                <div x-data={`({ open: ${expanded} })`} x-init="$watch('open', () => setTimeout(() => lucide.createIcons(), 50))">
                   <button
                     x-on:click="open = !open"
                     class={`sidebar-link w-full text-left ${isParentActive ? "active" : ""}`}
@@ -112,7 +116,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
                       <a
                         href={child.href}
                         class={`sidebar-link text-sm ${currentPath === child.href || currentPath.startsWith(child.href) ? "active" : ""}`}
-                        x-on:click="closeOnMobile()"
+                        x-on:click="$dispatch('close-mobile')"
                       >
                         <i data-lucide={child.icon} class="w-4 h-4 flex-shrink-0" />
                         <span>{child.label}</span>

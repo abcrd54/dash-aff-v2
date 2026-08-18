@@ -2,6 +2,7 @@ import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
 import type { AuthUser } from "../../middleware/auth";
+import { PLATFORM_INFO } from "../../lib/constants";
 
 interface PostGroup {
   identity: string;
@@ -42,15 +43,6 @@ interface PostPageProps {
   autoGenerateActive: boolean;
   error?: string;
 }
-
-const PLATFORM_INFO: Record<string, { label: string; color: string }> = {
-  FACEBOOK: { label: "FB", color: "bg-blue-600" },
-  TWITTER: { label: "X", color: "bg-slate-800" },
-  INSTAGRAM: { label: "IG", color: "bg-gradient-to-br from-pink-500 to-orange-400" },
-  TIKTOK: { label: "TK", color: "bg-slate-900" },
-  THREADS: { label: "TH", color: "bg-slate-800" },
-  PINTEREST: { label: "PIN", color: "bg-red-600" },
-};
 
 const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, personas, autoPostActive, autoGenerateActive, error }) => {
   const totalCapacity = groups.reduce((sum, g) => sum + g.monthlyCapacity, 0);
@@ -119,7 +111,7 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
                     placeholder="https://s.shopee.co.id/..."
                     class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <button type="button" id="pickLinkBtn" class="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-50 cursor-pointer">
+                  <button type="button" id="pickLinkBtn" class="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-50 cursor-pointer" onclick="openAffiliatePicker()">
                     Pilih
                   </button>
                 </div>
@@ -147,12 +139,8 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
 
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Gambar</label>
-                <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
-                  <div class="text-2xl mb-1">🖼️</div>
-                  <p class="text-xs text-slate-400">Generate via jadiapa.com atau upload manual</p>
-                  <button type="button" id="generateImageBtn" class="mt-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg cursor-pointer transition">
-                    Generate Gambar
-                  </button>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center opacity-60">
+                  <p class="text-xs text-slate-400">Generate gambar via jadiapa.com — Coming Soon</p>
                 </div>
               </div>
 
@@ -173,9 +161,9 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
               <h2 class="text-lg font-semibold text-slate-800">Post Tersimpan</h2>
             </div>
             {posts.length === 0 ? (
-              <div class="p-12 text-center">
-                <div class="text-4xl mb-2">📝</div>
-                <p class="text-sm text-slate-400">Belum ada post. Compose di atas untuk membuat.</p>
+              <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <p class="empty-state-text">Belum ada post. Compose di atas untuk membuat.</p>
               </div>
             ) : (
               <div class="divide-y divide-slate-100">
@@ -197,7 +185,7 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
                         </div>
                       </div>
                       <div class="flex items-center gap-1 ml-3">
-                        <button class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer">Edit</button>
+                        <button data-edit-post={String(p.id)} data-caption={p.caption} data-link={p.link || ""} data-comment={p.comment || ""} data-placement={p.placement || "comment"} data-group={p.groupName || ""} class="edit-post-btn text-xs text-blue-600 hover:text-blue-800 cursor-pointer">Edit</button>
                         <button data-delete-post={String(p.id)} class="delete-post-btn text-xs text-red-600 hover:text-red-800 cursor-pointer">Hapus</button>
                       </div>
                     </div>
@@ -387,7 +375,7 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
             });
           });
 
-          document.getElementById('generateImageBtn').addEventListener('click', function() {
+          document.getElementById('generateImageBtn')?.addEventListener('click', function() {
             showToast('info', 'Coming Soon', 'Generate gambar via jadiapa.com akan segera tersedia');
           });
 
@@ -402,7 +390,45 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
               showToast('error', 'Error', 'Caption tidak boleh kosong');
               return;
             }
-            showToast('info', 'Coming Soon', 'Auto post via Bundle Social akan segera tersedia');
+            var btn = this;
+            var origText = btn.textContent;
+            btn.textContent = 'Mengirim...';
+            btn.disabled = true;
+
+            var data = {
+              groupName: group,
+              caption: caption,
+              link: document.getElementById('linkInput').value.trim(),
+              comment: document.getElementById('commentInput').value.trim(),
+              placement: document.getElementById('placementSelect').value,
+            };
+
+            fetch('/api/post/send', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+              btn.textContent = origText;
+              btn.disabled = false;
+              if (result.success) {
+                var ok = result.data.filter(function(r) { return r.success; }).length;
+                var fail = result.data.filter(function(r) { return !r.success; }).length;
+                if (fail === 0) {
+                  showToast('success', 'Sukses', ok + ' akun berhasil diposting ke Bundle Social');
+                } else {
+                  showToast('warning', 'Sebagian berhasil', ok + ' berhasil, ' + fail + ' gagal. Cek log untuk detail.');
+                }
+              } else {
+                showToast('error', 'Error', result.error || 'Gagal mengirim post');
+              }
+            })
+            .catch(function() {
+              btn.textContent = origText;
+              btn.disabled = false;
+              showToast('error', 'Error', 'Gagal mengirim post');
+            });
           });
 
           document.getElementById('saveDraftBtn').addEventListener('click', function() {
@@ -506,6 +532,44 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
               });
             });
           });
+
+          document.querySelectorAll('.edit-post-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var caption = this.getAttribute('data-caption') || '';
+              var link = this.getAttribute('data-link') || '';
+              var comment = this.getAttribute('data-comment') || '';
+              var placement = this.getAttribute('data-placement') || 'comment';
+              var group = this.getAttribute('data-group') || '';
+              document.getElementById('captionInput').value = caption;
+              document.getElementById('linkInput').value = link;
+              document.getElementById('commentInput').value = comment;
+              document.getElementById('placementSelect').value = placement;
+              document.getElementById('groupSelect').value = group;
+              document.getElementById('captionCharCount').textContent = caption.length + ' karakter';
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+          });
+
+          window.openAffiliatePicker = function() {
+            fetch('/api/affiliate-link/list')
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                var products = data.data || [];
+                if (products.length === 0) {
+                  showToast('info', 'Info', 'Belum ada link affiliate. Tambahkan di halaman Link Affiliate.');
+                  return;
+                }
+                var html = '<div class="space-y-2 max-h-60 overflow-y-auto">';
+                products.forEach(function(p) {
+                  html += '<button onclick="document.getElementById(\'linkInput\').value=\'' + (p.url || '').replace(/'/g, "\\'") + '\';Swal.close()" class="w-full text-left p-2 hover:bg-slate-50 rounded text-sm border border-slate-200">';
+                  html += '<div class="font-medium text-slate-700 truncate">' + (p.name || 'Tanpa nama') + '</div>';
+                  html += '<div class="text-xs text-slate-400 truncate">' + (p.url || '') + '</div>';
+                  html += '</button>';
+                });
+                html += '</div>';
+                Swal.fire({ title: 'Pilih Link Affiliate', html: html, showConfirmButton: false, width: '480px' });
+              });
+          };
         })();
       `)}</script>
     </Layout>

@@ -16,7 +16,7 @@ export async function sendOTP(
 
   try {
     await resend.emails.send({
-      from: `Dashboard Affiliate <${fromEmail}>`,
+      from: fromEmail,
       to: [to],
       subject: "Kode OTP Login — Dashboard Management Affiliate",
       html: `

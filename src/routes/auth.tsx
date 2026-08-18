@@ -79,6 +79,14 @@ authRoutes.post("/login", async (c) => {
   }
 
   if (!user.two_factor_enabled) {
+    const sessionCookie = await createSessionCookie({ id: user.id, username: user.username, role: user.role, email: user.email });
+    setCookie(c, "session", sessionCookie, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
     return c.redirect(`/account?error=${encodeURIComponent("2FA belum diaktifkan. Silakan atur email dan aktifkan di halaman Akun.")}`);
   }
 

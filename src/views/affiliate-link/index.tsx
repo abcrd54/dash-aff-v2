@@ -2,6 +2,7 @@ import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
 import type { AuthUser } from "../../middleware/auth";
+import { PLACEMENT_CONFIG } from "../../lib/constants";
 
 interface AffiliateProduct {
   id: number;
@@ -28,12 +29,6 @@ interface AffiliateLinkProps {
   groups: AffiliateGroup[];
   error?: string;
 }
-
-const PLACEMENT_CONFIG: Record<string, { label: string; platforms: string[] }> = {
-  comment: { label: "Di Komentar", platforms: ["Facebook", "Instagram"] },
-  caption: { label: "Di Caption", platforms: ["X", "TikTok", "Threads", "Pinterest"] },
-  both: { label: "Keduanya", platforms: ["Semua platform"] },
-};
 
 const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, error }) => {
   return (
@@ -93,7 +88,8 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
                 <button
                   type="button"
                   id="saveProductBtn"
-                  class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg cursor-pointer transition"
+                  disabled
+                  class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Simpan Produk
                 </button>
@@ -102,24 +98,12 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
           </div>
 
           {/* Auto Scrape Affiliate */}
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 opacity-60">
+            <div class="flex items-center justify-between mb-2">
               <h2 class="text-lg font-semibold text-slate-800">Auto Scrape Dashboard Affiliate</h2>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">Coming Soon</span>
             </div>
-            <div class="border border-dashed border-slate-300 rounded-lg p-6 text-center">
-              <div class="text-3xl mb-2">🤖</div>
-              <p class="text-sm text-slate-500 mb-1">Scraping dashboard affiliate Shopee</p>
-              <p class="text-xs text-slate-400">Ambil data views, klik, komisi, & produk trending secara otomatis</p>
-              <div class="mt-4 grid grid-cols-4 gap-2">
-                {["Views", "Klik", "Komisi", "Trending"].map((label) => (
-                  <div class="bg-slate-50 rounded-lg p-2 text-center">
-                    <div class="text-xs text-slate-400">{label}</div>
-                    <div class="text-sm font-semibold text-slate-300">-</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <p class="text-xs text-slate-500">Scrape performa dashboard affiliate Shopee otomatis — views, klik, komisi, produk trending. Fitur ini sedang dikembangkan.</p>
           </div>
 
           {/* Tabel Produk */}
@@ -129,9 +113,10 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
             </div>
             <div class="overflow-x-auto">
               {products.length === 0 ? (
-                <div class="p-12 text-center">
-                  <div class="text-4xl mb-2">📦</div>
-                  <p class="text-sm text-slate-400">Belum ada produk affiliate. Input URL di atas untuk mulai.</p>
+<div class="empty-state">
+                  <div class="empty-state-icon">🔗</div>
+                  <p class="empty-state-text">Belum ada produk affiliate</p>
+                  <p class="text-xs text-slate-400">Input URL Shopee/Tokopedia di atas untuk scrape & simpan produk</p>
                 </div>
               ) : (
                 <table class="w-full text-sm">
@@ -265,6 +250,7 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
                 document.getElementById('scrapeName').textContent = data.data.name || '-';
                 document.getElementById('scrapePrice').textContent = data.data.price || '-';
                 document.getElementById('scrapeDesc').textContent = (data.data.description || '-').substring(0, 200);
+                document.getElementById('saveProductBtn').disabled = false;
               } else {
                 document.getElementById('scrapeName').textContent = 'Gagal scrape';
                 document.getElementById('scrapePrice').textContent = '-';
@@ -303,7 +289,26 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
             .then(function(data) {
               if (data.success) {
                 showToast('success', 'Sukses', 'Produk berhasil disimpan');
-                setTimeout(function() { location.reload(); }, 500);
+                if (data.data) {
+                  var tbody = document.querySelector('.responsive-table tbody');
+                  if (tbody) {
+                    var emptyRow = tbody.querySelector('tr td[colspan]');
+                    if (emptyRow) emptyRow.closest('tr').remove();
+                    var img = data.data.images ? (function() { try { var imgs = JSON.parse(data.data.images); return imgs[0] || ''; } catch(e) { return ''; } })() : '';
+                    var row = document.createElement('tr');
+                    row.innerHTML = '<td data-label="Produk"><div class="font-medium text-slate-800">' + (data.data.name || '') + '</div><div class="text-xs text-slate-400 truncate max-w-[200px] lg:max-w-[400px]">' + (data.data.url || '') + '</div></td>' +
+                      '<td data-label="Gambar">' + (img ? '<img src="' + img + '" class="w-10 h-10 rounded object-cover" />' : '-') + '</td>' +
+                      '<td data-label="Harga">' + (data.data.price || '-') + '</td>' +
+                      '<td data-label="Views">' + (data.data.views || 0) + '</td>' +
+                      '<td data-label="Klik">' + (data.data.clicks || 0) + '</td>' +
+                      '<td data-label="Aksi"><button data-delete-id="' + data.data.id + '" class="delete-product-btn text-xs text-red-600 hover:text-red-800 cursor-pointer">Hapus</button></td>';
+                    tbody.appendChild(row);
+                  }
+                }
+                document.getElementById('scrapeResult').classList.add('hidden');
+                document.getElementById('urlInput').value = '';
+                scrapedData = null;
+                document.getElementById('saveProductBtn').disabled = true;
               } else {
                 showToast('error', 'Error', data.error || 'Gagal menyimpan produk');
               }

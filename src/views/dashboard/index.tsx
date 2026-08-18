@@ -34,16 +34,16 @@ const UserDashboard: FC<DashboardProps> = ({ user, stats, autoPostActive = false
 
   return (
     <Layout user={user} title="Dashboard" currentPath="/dashboard" autoPostActive={autoPostActive} autoGenerateActive={autoGenerateActive}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         {cards.map((card) => (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+          <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500 font-medium">{card.label}</p>
-                <p className="text-3xl font-bold text-slate-900 mt-1">{card.value}</p>
+                <p class="text-sm text-slate-500 font-medium">{card.label}</p>
+                <p class="text-3xl font-bold text-slate-900 mt-1">{card.value}</p>
               </div>
-              <div className={`w-12 h-12 ${card.color} rounded-lg flex items-center justify-center`}>
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class={`w-12 h-12 ${card.color} rounded-lg flex items-center justify-center`}>
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d={card.icon} />
                 </svg>
               </div>
@@ -52,10 +52,28 @@ const UserDashboard: FC<DashboardProps> = ({ user, stats, autoPostActive = false
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800 mb-2">Selamat Datang, {user.username}!</h2>
-        <p className="text-slate-500 text-sm">
-          Anda login sebagai <span className="font-medium text-slate-700">{user.role}</span>.
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
+        <h2 class="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <a href="/post" class="flex items-center gap-2 p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition text-sm font-medium text-blue-700">
+            <span class="text-lg">📤</span> Post Sekarang
+          </a>
+          <a href="/generate" class="flex items-center gap-2 p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition text-sm font-medium text-purple-700">
+            <span class="text-lg">✨</span> Generate Konten
+          </a>
+          <a href="/affiliate-link" class="flex items-center gap-2 p-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition text-sm font-medium text-emerald-700">
+            <span class="text-lg">🔗</span> Tambah Link
+          </a>
+          <a href="/create-bunsos" class="flex items-center gap-2 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition text-sm font-medium text-amber-700">
+            <span class="text-lg">➕</span> Buat Akun
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-800 mb-2">Selamat Datang, {user.username}!</h2>
+        <p class="text-slate-500 text-sm">
+          Anda login sebagai <span class="font-medium text-slate-700">{user.role}</span>.
           Gunakan sidebar untuk navigasi ke menu yang tersedia.
         </p>
       </div>

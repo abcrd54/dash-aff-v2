@@ -1,7 +1,10 @@
 import { Hono } from "hono";
+import { streamSSE } from "hono/streaming";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { getAffiliateAccounts, getConnectionsByAccount, getSocialPosts, createSocialPost, deleteSocialPost, getUserPersonas, getGroupAutoPostConfigs, ensureGroupAutoPostConfig, updateGroupAutoPostConfig, hasAnyAutoPostEnabled, hasAnyAutoGenerateEnabled } from "../lib/db";
+import { getAffiliateAccounts, getConnectionsByAccount, getSocialPosts, createSocialPost, deleteSocialPost, getUserPersonas, getGroupAutoPostConfigs, ensureGroupAutoPostConfig, updateGroupAutoPostConfig, hasAnyAutoPostEnabled, hasAnyAutoGenerateEnabled, getPostLogs } from "../lib/db";
+import { sendPostToGroup } from "../lib/auto-post";
 import PostPage from "../views/post/index";
+import PostLogsPage from "../views/post/logs";
 
 const postRoutes = new Hono();
 
@@ -161,6 +164,73 @@ postRoutes.post("/api/post/auto-config", authMiddleware, async (c) => {
   });
 
   return c.json({ success: true });
+});
+
+postRoutes.post("/api/post/send", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+
+  const identity = body.groupName;
+  if (!identity) {
+    return c.json({ success: false, error: "Grup harus dipilih" }, 400);
+  }
+
+  const caption = body.caption;
+  if (!caption) {
+    return c.json({ success: false, error: "Caption harus diisi" }, 400);
+  }
+
+  try {
+    const results = await sendPostToGroup(identity, caption, user.id, {
+      link: body.link || "",
+      comment: body.comment || "",
+      placement: body.placement || "comment",
+    });
+    return c.json({ success: true, data: results });
+  } catch (e: any) {
+    return c.json({ success: false, error: e.message }, 500);
+  }
+});
+
+postRoutes.post("/api/post/send/stream", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+
+  const identity = body.groupName;
+  if (!identity) {
+    return c.json({ success: false, error: "Grup harus dipilih" }, 400);
+  }
+
+  const caption = body.caption;
+  if (!caption) {
+    return c.json({ success: false, error: "Caption harus diisi" }, 400);
+  }
+
+  return streamSSE(c, async (stream) => {
+    stream.writeSSE({ event: "start", data: JSON.stringify({ identity }) });
+
+    const results = await sendPostToGroup(identity, caption, user.id, {
+      link: body.link || "",
+      comment: body.comment || "",
+      placement: body.placement || "comment",
+    });
+
+    for (const result of results) {
+      stream.writeSSE({ event: "result", data: JSON.stringify(result) });
+    }
+
+    stream.writeSSE({ event: "done", data: JSON.stringify({ total: results.length }) });
+  });
+});
+
+postRoutes.get("/post-logs", authMiddleware, (c) => {
+  const user = getSession(c)!;
+  const logs = getPostLogs(user.id);
+  const autoPostActive = hasAnyAutoPostEnabled(user.id);
+  const autoGenerateActive = hasAnyAutoGenerateEnabled(user.id);
+  return c.html(
+    <PostLogsPage user={user} logs={logs} />
+  );
 });
 
 export default postRoutes;

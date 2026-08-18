@@ -99,41 +99,53 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, personas, autoPostA
                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Link Affiliate</label>
+                  <input
+                    type="url"
+                    id="personaLink"
+                    placeholder="https://shopee.co.id/..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">Penempatan Link</label>
+                  <select id="personaPlacement" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="comment">Di Komentar</option>
+                    <option value="caption">Di Caption</option>
+                  </select>
+                </div>
+              </div>
               <div class="flex gap-2">
                 <button type="button" id="generatePersonaCaptionBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg cursor-pointer transition">
                   Generate Caption
-                </button>
-                <button type="button" id="generatePersonaImageBtn" class="px-4 py-2 border border-blue-300 text-blue-600 text-sm font-medium rounded-lg cursor-pointer transition hover:bg-blue-50">
-                  Generate Gambar
                 </button>
               </div>
               <div id="personaResult" class="hidden border border-blue-200 rounded-lg p-4 bg-blue-50/50">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs font-medium text-blue-700">Hasil Generate</span>
-                  <button type="button" id="savePersonaDraftBtn" class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer">Simpan ke Draft</button>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="postPersonaNowBtn" class="text-xs text-emerald-600 hover:text-emerald-800 cursor-pointer font-medium">Post Sekarang</button>
+                    <button type="button" id="savePersonaDraftBtn" class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer">Simpan ke Draft</button>
+                  </div>
                 </div>
-                <textarea id="personaCaptionResult" rows={4} class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white" readonly />
+                <textarea id="personaCaptionResult" rows={4} class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white resize-none" readonly />
+                <div id="personaSaveLink" class="hidden mt-2 text-center">
+                  <a href="/post" class="text-xs text-blue-600 hover:underline">Lihat & Post di Management Post →</a>
+                </div>
               </div>
             </form>
           </div>
 
-          {/* Jalur B: News Scraping */}
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          {/* Jalur B: Coming Soon */}
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 opacity-60">
             <div class="flex items-center gap-2 mb-4">
               <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-100 text-purple-700">Jalur B</span>
               <h2 class="text-lg font-semibold text-slate-800">Generate dari News Scraping</h2>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">Coming Soon</span>
             </div>
-            <p class="text-xs text-slate-500 mb-4">Full otomatis — scrape berita trending → AI generate caption + gambar → auto post</p>
-
-            <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
-              <div class="text-3xl mb-2">📰</div>
-              <p class="text-sm text-slate-500 mb-1">Scraping News + Auto Generate</p>
-              <p class="text-xs text-slate-400">Aktifkan di Settings per grup untuk mulai auto generate dari berita</p>
-              <a href="/settings" class="mt-3 inline-block px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg cursor-pointer transition">
-                Buka Settings
-              </a>
-            </div>
+            <p class="text-xs text-slate-500">Full otomatis — scrape berita trending → AI generate caption + gambar → auto post. Fitur ini sedang dikembangkan.</p>
           </div>
         </div>
 
@@ -192,6 +204,7 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, personas, autoPostA
             if (data.caption) {
               var resultDiv = document.getElementById('personaResult');
               resultDiv.classList.remove('hidden');
+              document.getElementById('personaSaveLink').classList.add('hidden');
               document.getElementById('personaCaptionResult').value = data.caption;
             } else {
               showToast('error', 'Error', data.error || 'Gagal generate caption');
@@ -203,26 +216,81 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, personas, autoPostA
           });
         });
 
-        document.getElementById('generatePersonaImageBtn').addEventListener('click', function() {
-          showToast('info', 'Coming Soon', 'Generate gambar via jadiapa.com segera tersedia');
-        });
-
         document.getElementById('savePersonaDraftBtn').addEventListener('click', function() {
           var group = document.getElementById('personaGroupSelect').value;
           var caption = document.getElementById('personaCaptionResult').value.trim();
           if (!caption) return;
 
+          var btn = this;
+          btn.textContent = 'Menyimpan...';
+          btn.disabled = true;
+
           fetch('/api/post/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ groupName: group || 'Uncategorized', caption: caption })
+            body: JSON.stringify({
+              groupName: group || 'Uncategorized',
+              caption: caption,
+              link: document.getElementById('personaLink').value.trim(),
+              placement: document.getElementById('personaPlacement').value,
+              personaId: document.getElementById('personaSelect').value || null
+            })
           })
           .then(function(r) { return r.json(); })
           .then(function(data) {
+            btn.textContent = 'Simpan ke Draft';
+            btn.disabled = false;
             if (data.success) {
               showToast('success', 'Sukses', 'Konten disimpan ke draft');
-              document.getElementById('personaResult').classList.add('hidden');
+              document.getElementById('personaSaveLink').classList.remove('hidden');
             }
+          });
+        });
+
+        document.getElementById('postPersonaNowBtn').addEventListener('click', function() {
+          var group = document.getElementById('personaGroupSelect').value;
+          var caption = document.getElementById('personaCaptionResult').value.trim();
+          if (!group) { showToast('error', 'Error', 'Pilih grup tujuan terlebih dahulu'); return; }
+          if (!caption) return;
+
+          var btn = this;
+          var origText = btn.textContent;
+          btn.textContent = 'Mengirim...';
+          btn.disabled = true;
+
+          var data = {
+            groupName: group,
+            caption: caption,
+            link: document.getElementById('personaLink').value.trim(),
+            comment: '',
+            placement: document.getElementById('personaPlacement').value,
+          };
+
+          fetch('/api/post/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(result) {
+            btn.textContent = origText;
+            btn.disabled = false;
+            if (result.success) {
+              var ok = result.data.filter(function(r) { return r.success; }).length;
+              var fail = result.data.filter(function(r) { return !r.success; }).length;
+              if (fail === 0) {
+                showToast('success', 'Sukses', ok + ' akun berhasil diposting');
+              } else {
+                showToast('warning', 'Sebagian', ok + ' berhasil, ' + fail + ' gagal');
+              }
+            } else {
+              showToast('error', 'Error', result.error || 'Gagal mengirim post');
+            }
+          })
+          .catch(function() {
+            btn.textContent = origText;
+            btn.disabled = false;
+            showToast('error', 'Error', 'Gagal mengirim post');
           });
         });
       `)}</script>

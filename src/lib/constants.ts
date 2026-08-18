@@ -1,0 +1,41 @@
+export const PLATFORM_INFO: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+  TWITTER: { label: "X", color: "bg-slate-800", bg: "bg-slate-800 hover:bg-slate-900", icon: "𝕏" },
+  FACEBOOK: { label: "FB", color: "bg-blue-600", bg: "bg-blue-600 hover:bg-blue-700", icon: "f" },
+  INSTAGRAM: { label: "IG", color: "bg-gradient-to-br from-pink-500 to-orange-400", bg: "bg-gradient-to-br from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500", icon: "📷" },
+  TIKTOK: { label: "TK", color: "bg-slate-900", bg: "bg-slate-900 hover:bg-black", icon: "🎵" },
+  THREADS: { label: "TH", color: "bg-slate-800", bg: "bg-slate-800 hover:bg-slate-900", icon: "🧵" },
+  PINTEREST: { label: "PIN", color: "bg-red-600", bg: "bg-red-600 hover:bg-red-700", icon: "📌" },
+  LINKEDIN: { label: "LI", color: "bg-blue-700", bg: "bg-blue-700 hover:bg-blue-800", icon: "in" },
+  YOUTUBE: { label: "YT", color: "bg-red-600", bg: "bg-red-600 hover:bg-red-700", icon: "▶" },
+  REDDIT: { label: "RD", color: "bg-orange-600", bg: "bg-orange-600 hover:bg-orange-700", icon: "🤖" },
+  DISCORD: { label: "DC", color: "bg-indigo-600", bg: "bg-indigo-600 hover:bg-indigo-700", icon: "🎮" },
+  SLACK: { label: "SL", color: "bg-emerald-600", bg: "bg-emerald-600 hover:bg-emerald-700", icon: "#" },
+  MASTODON: { label: "MS", color: "bg-purple-600", bg: "bg-purple-600 hover:bg-purple-700", icon: "🐘" },
+  BLUESKY: { label: "BS", color: "bg-sky-500", bg: "bg-sky-500 hover:bg-sky-600", icon: "☁" },
+  GOOGLE_BUSINESS: { label: "GB", color: "bg-blue-500", bg: "bg-blue-500 hover:bg-blue-600", icon: "G" },
+  SNAPCHAT: { label: "SC", color: "bg-amber-400", bg: "bg-amber-400 hover:bg-amber-500", icon: "👻" },
+};
+
+export const PLATFORM_ICONS: Record<string, string> = {
+  TWITTER: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+  FACEBOOK: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+  INSTAGRAM: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>',
+  TIKTOK: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>',
+  THREADS: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 11.976c0-3.498.815-6.277 2.422-8.262C5.354 1.929 7.899.75 11.233.75c2.65 0 4.755.854 6.256 2.537 1.334 1.496 2.065 3.545 2.179 6.101h-3.353c-.084-1.536-.501-2.705-1.258-3.505-.848-.897-2.089-1.367-3.72-1.367-2.682 0-4.256 1.914-4.746 3.395-.27.812-.405 1.74-.405 2.78 0 1.047.135 1.982.405 2.795.49 1.48 2.064 3.395 4.746 3.395.878 0 1.652-.135 2.322-.407.453-.183.845-.423 1.172-.72.63-.573.994-1.327 1.1-2.138h3.243c-.197 2.34-1.06 4.125-2.566 5.307-1.462 1.146-3.437 1.726-5.875 1.726zm-1.283-8.03c-1.1 0-2.045-.32-2.655-.87-.523-.47-.82-1.1-.82-1.74 0-.64.297-1.27.82-1.74.61-.55 1.555-.87 2.655-.87s2.045.32 2.655.87c.523.47.82 1.1.82 1.74 0 .64-.297 1.27-.82 1.74-.61.55-1.555.87-2.655.87z"/></svg>',
+  PINTEREST: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.768 1.518 1.688 0 1.029-.655 2.567-.993 3.992-.282 1.193.598 2.165 1.775 2.165 2.128 0 3.765-2.245 3.765-5.487 0-2.867-2.06-4.872-5.001-4.872-3.407 0-5.407 2.556-5.407 5.198 0 1.029.396 2.133.891 2.733.098.119.112.223.083.344-.091.379-.293 1.193-.333 1.36-.052.22-.174.266-.401.16-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.966 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.814 10.762 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>',
+};
+
+export const PLACEMENT_CONFIG: Record<string, { label: string; platforms: string[] }> = {
+  comment: { label: "Di Komentar", platforms: ["Facebook", "Instagram"] },
+  caption: { label: "Di Caption", platforms: ["X", "TikTok", "Threads", "Pinterest"] },
+  both: { label: "Keduanya", platforms: ["Semua platform"] },
+};
+
+export const PLATFORM_PRIME_TIME: Record<string, { best: string; days: string }> = {
+  FACEBOOK: { best: "12:00 - 20:00", days: "Selasa, Rabu" },
+  INSTAGRAM: { best: "12:00 - 21:00", days: "Selasa, Rabu" },
+  TWITTER: { best: "12:00 - 18:00", days: "Selasa - Kamis" },
+  TIKTOK: { best: "13:00 - 20:00", days: "Rabu, Kamis" },
+  THREADS: { best: "12:00 - 18:00", days: "Selasa - Kamis" },
+  PINTEREST: { best: "10:00 - 13:00", days: "Selasa - Kamis" },
+};

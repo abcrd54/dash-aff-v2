@@ -3,8 +3,54 @@ services:
     build: .
     ports:
       - "4000:4000"
+    env_file:
+      - .env
     environment:
       - PORT=4000
-      - JWT_SECRET=change-this-to-a-random-secret
+      - NODE_ENV=production
+      - KUMAIL_URL=http://kumux-mail:3010
+      - PERSONA_SERVICE_URL=http://aff-personal:3000
     volumes:
       - ./data:/app/data
+    depends_on:
+      - kumux-mail
+      - aff-personal
+    restart: unless-stopped
+
+  kumux-mail:
+    image: ghcr.io/mboxjem/kumux-mail:latest
+    ports:
+      - "3010:3010"
+    volumes:
+      - ./kumux-mail/kumux-mail.toml:/app/kumux-mail.toml:ro
+    restart: unless-stopped
+
+  aff-personal:
+    image: ghcr.io/abcrd54/personal-aff-v2:latest
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  shopee-product-scraper:
+    build: ./scrapers/shopee-product
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+
+  shopee-affiliate-scraper:
+    build: ./scrapers/shopee-affiliate
+    ports:
+      - "3101:3101"
+    restart: unless-stopped
+
+  news-scraper:
+    build: ./scrapers/news
+    ports:
+      - "3102:3102"
+    restart: unless-stopped
+
+  jadiapa-scraper:
+    build: ./scrapers/jadiapa
+    ports:
+      - "3103:3103"
+    restart: unless-stopped

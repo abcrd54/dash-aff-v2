@@ -77,15 +77,26 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
                 <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">
                   Password
                 </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  required
-                  autocomplete="current-password"
-                  placeholder="Masukkan password"
-                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
+                <div class="relative">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    autocomplete="current-password"
+                    placeholder="Masukkan password"
+                    class="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  />
+                  <button
+                    type="button"
+                    onclick="const p=document.getElementById('password');const oe=document.getElementById('eye-off');const e=document.getElementById('eye');if(p.type==='password'){p.type='text';oe.classList.add('hidden');e.classList.remove('hidden')}else{p.type='password';oe.classList.remove('hidden');e.classList.add('hidden')}"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    tabindex="-1"
+                  >
+                    <svg id="eye-off" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    <svg id="eye" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
               </div>
 
               <button

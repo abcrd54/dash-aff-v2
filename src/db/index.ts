@@ -77,8 +77,23 @@ export function getDB(): Database {
 
 export function initDB(): void {
   const database = getDB();
+
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE,
+      password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('admin', 'user')),
+      two_factor_enabled INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
   const schema = readFileSync(join(import.meta.dir, "schema.sql"), "utf-8");
-  database.exec(schema);
+  const restSchema = schema.replace(/CREATE TABLE IF NOT EXISTS users[^;]+;/s, "");
+  database.exec(restSchema);
   migrateBetterAuthSchema(database);
 
   try {

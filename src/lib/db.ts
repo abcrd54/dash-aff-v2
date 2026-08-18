@@ -613,3 +613,37 @@ export function hasAnyAutoGenerateEnabled(userId: number): boolean {
     .get(userId) as { cnt: number } | undefined;
   return (row?.cnt || 0) > 0;
 }
+
+export interface PostLog {
+  id: number;
+  user_id: number;
+  group_name: string;
+  account_email: string;
+  platforms: string;
+  caption: string | null;
+  status: string;
+  bundle_post_id: string | null;
+  error: string | null;
+  created_at: string;
+}
+
+export function getPostLogs(userId: number, limit = 50): PostLog[] {
+  return getDB()
+    .query("SELECT * FROM post_logs WHERE user_id = ? ORDER BY id DESC LIMIT ?")
+    .all(userId, limit) as PostLog[];
+}
+
+export function addPostLog(data: {
+  user_id: number;
+  group_name: string;
+  account_email: string;
+  platforms: string;
+  caption?: string;
+  status: string;
+  bundle_post_id?: string;
+  error?: string;
+}): void {
+  getDB()
+    .query("INSERT INTO post_logs (user_id, group_name, account_email, platforms, caption, status, bundle_post_id, error) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(data.user_id, data.group_name, data.account_email, data.platforms, data.caption || null, data.status, data.bundle_post_id || null, data.error || null);
+}
