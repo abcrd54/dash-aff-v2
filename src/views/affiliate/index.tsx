@@ -1,11 +1,11 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 import type { AffiliateAccount } from "../../lib/db";
 
 interface CreateBunsosProps {
-  user: JWTPayload;
+  user: AuthUser;
   accounts: AffiliateAccount[];
 }
 

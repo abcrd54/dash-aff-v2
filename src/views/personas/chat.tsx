@@ -1,9 +1,9 @@
 import type { FC } from "hono/jsx";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 import Layout from "../../components/layout";
 
 interface ChatPageProps {
-  user: JWTPayload;
+  user: AuthUser;
   personaId: string;
   personaName: string;
   persona: any;

@@ -113,7 +113,6 @@ async function* runSingleOnboarding(
       user_id: data.user_id,
       name: email,
       email,
-      password: data.password,
       password_hash: passwordHash,
       first_name: data.first_name,
       last_name: data.last_name,

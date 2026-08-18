@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 
 interface JadiapaConfigData {
   email: string;
@@ -12,7 +12,7 @@ interface JadiapaConfigData {
 }
 
 interface SettingsProps {
-  user: JWTPayload;
+  user: AuthUser;
   jadiapaConnected: boolean;
   jadiapaEmail: string;
   jadiapa: JadiapaConfigData;

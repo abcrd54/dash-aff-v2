@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 
 interface JadiapaBalance {
   balance: string;
@@ -10,13 +10,15 @@ interface JadiapaBalance {
 }
 
 interface AccountPageProps {
-  user: JWTPayload;
+  user: AuthUser;
   error?: string;
   success?: string;
   jadiapa: JadiapaBalance;
+  email?: string | null;
+  twoFactorEnabled?: number;
 }
 
-const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa }) => {
+const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa, email, twoFactorEnabled }) => {
   return (
     <Layout user={user} title="Akun Saya" currentPath="/account">
       <div class="max-w-xl space-y-6">
@@ -34,14 +36,66 @@ const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa }) =>
               <span class="text-slate-500 text-sm">Username</span>
               <span class="text-slate-800 font-medium text-sm">{user.username}</span>
             </div>
-            <div class="flex justify-between py-2">
+            <div class="flex justify-between py-2 border-b border-slate-100">
+              <span class="text-slate-500 text-sm">Email</span>
+              <span class="text-slate-800 font-medium text-sm">{email || <span class="text-red-400">Belum diatur</span>}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b border-slate-100">
               <span class="text-slate-500 text-sm">Role</span>
               <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                 {user.role}
               </span>
             </div>
+            <div class="flex justify-between py-2">
+              <span class="text-slate-500 text-sm">2FA (Email OTP)</span>
+              <span class={`px-2 py-0.5 rounded-full text-xs font-medium ${twoFactorEnabled ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                {twoFactorEnabled ? "Aktif" : "Nonaktif"}
+              </span>
+            </div>
           </div>
         </div>
+
+        {!email && (
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Atur Email</h3>
+            <p class="text-sm text-slate-500 mb-4">Email diperlukan untuk verifikasi 2FA saat login.</p>
+            <form method="POST" action="/account/email" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="user@example.com"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+              >
+                Simpan Email
+              </button>
+            </form>
+          </div>
+        )}
+
+        {email && (
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">2FA Email OTP</h3>
+            <p class="text-sm text-slate-500 mb-4">
+              2FA Email OTP: {twoFactorEnabled ? <span class="text-emerald-600 font-medium">Aktif</span> : <span class="text-red-600 font-medium">Nonaktif</span>}
+            </p>
+            <form method="POST" action="/account/two-factor" class="mt-0">
+              <button
+                type="submit"
+                class={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${twoFactorEnabled ? "bg-red-100 hover:bg-red-200 text-red-700" : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"}`}
+              >
+                {twoFactorEnabled ? "Nonaktifkan 2FA" : "Aktifkan 2FA"}
+              </button>
+            </form>
+          </div>
+        )}
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <h3 class="text-lg font-semibold text-slate-800 mb-4">jadiapa.com</h3>

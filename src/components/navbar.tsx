@@ -1,8 +1,8 @@
 import type { FC } from "hono/jsx";
-import type { JWTPayload } from "../middleware/auth";
+import type { AuthUser } from "../middleware/auth";
 
 interface NavbarProps {
-  user: JWTPayload;
+  user: AuthUser;
   title: string;
 }
 

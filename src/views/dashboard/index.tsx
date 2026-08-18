@@ -1,9 +1,9 @@
 import type { FC } from "hono/jsx";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 
 interface DashboardProps {
-  user: JWTPayload;
+  user: AuthUser;
   stats: {
     users: number;
     posts: number;

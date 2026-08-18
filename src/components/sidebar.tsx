@@ -1,9 +1,9 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
-import type { JWTPayload } from "../middleware/auth";
+import type { AuthUser } from "../middleware/auth";
 
 interface SidebarProps {
-  user: JWTPayload;
+  user: AuthUser;
   currentPath: string;
   autoPostActive: boolean;
   autoGenerateActive: boolean;

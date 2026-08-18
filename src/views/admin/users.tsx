@@ -1,11 +1,11 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 import type { User } from "../../lib/db";
 
 interface UsersPageProps {
-  user: JWTPayload;
+  user: AuthUser;
   users: User[];
 }
 
@@ -29,7 +29,9 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
               <tr>
                 <th class="text-left px-6 py-3 text-slate-600 font-medium">ID</th>
                 <th class="text-left px-6 py-3 text-slate-600 font-medium">Username</th>
+                <th class="text-left px-6 py-3 text-slate-600 font-medium">Email</th>
                 <th class="text-left px-6 py-3 text-slate-600 font-medium">Role</th>
+                <th class="text-left px-6 py-3 text-slate-600 font-medium">2FA</th>
                 <th class="text-left px-6 py-3 text-slate-600 font-medium">Dibuat</th>
                 <th class="text-right px-6 py-3 text-slate-600 font-medium">Aksi</th>
               </tr>
@@ -40,6 +42,7 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
                 <tr class="hover:bg-slate-50 transition">
                   <td class="px-6 py-4 text-slate-500 font-mono text-xs">#{u.id}</td>
                   <td class="px-6 py-4 font-medium text-slate-800">{u.username}</td>
+                  <td class="px-6 py-4 text-slate-500 text-xs">{u.email || <span class="text-red-400">-</span>}</td>
                   <td class="px-6 py-4">
                     <span
                       class={`px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -47,6 +50,11 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
                       }`}
                     >
                       {u.role}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class={`px-2 py-0.5 rounded-full text-xs font-medium ${u.two_factor_enabled ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                      {u.two_factor_enabled ? "ON" : "OFF"}
                     </span>
                   </td>
                   <td class="px-6 py-4 text-slate-500">{u.created_at}</td>
@@ -72,7 +80,7 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
               )})}
               {users.length === 0 && (
                 <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                  <td colspan="7" class="px-6 py-12 text-center text-slate-400">
                     Belum ada user terdaftar.
                   </td>
                 </tr>
@@ -91,7 +99,7 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
             class="space-y-4"
           >
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Username *</label>
               <input
                 type="text"
                 name="username"
@@ -100,11 +108,22 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Email *</label>
+              <input
+                type="email"
+                name="email"
+                required
+                placeholder="user@example.com"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Password *</label>
               <input
                 type="password"
                 name="password"
                 required
+                minlength="6"
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -157,6 +176,15 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
               />
             </div>
             <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                id="editEmail"
+                name="email"
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">Password (kosongkan jika tidak diubah)</label>
               <input
                 type="password"
@@ -174,6 +202,10 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="editTwoFactor" name="two_factor_enabled" value="1" class="w-4 h-4 text-blue-600 rounded" />
+              <label for="editTwoFactor" class="text-sm text-slate-700">2FA (Email OTP) Aktif</label>
             </div>
             <div class="flex gap-3 justify-end pt-2">
               <button
@@ -213,7 +245,9 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
           if (!u) return;
           document.getElementById('editUserId').value = u.id;
           document.getElementById('editUsername').value = u.username;
+          document.getElementById('editEmail').value = u.email || '';
           document.getElementById('editRole').value = u.role;
+          document.getElementById('editTwoFactor').checked = u.two_factor_enabled === 1;
           openEditUserModal();
         }
         function submitEditUser(event) {

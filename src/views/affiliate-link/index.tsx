@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 
 interface AffiliateProduct {
   id: number;
@@ -23,7 +23,7 @@ interface AffiliateGroup {
 }
 
 interface AffiliateLinkProps {
-  user: JWTPayload;
+  user: AuthUser;
   products: AffiliateProduct[];
   groups: AffiliateGroup[];
   error?: string;

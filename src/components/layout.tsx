@@ -1,11 +1,11 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
-import type { JWTPayload } from "../middleware/auth";
+import type { AuthUser } from "../middleware/auth";
 import Sidebar from "./sidebar";
 import Navbar from "./navbar";
 
 interface LayoutProps {
-  user: JWTPayload;
+  user: AuthUser;
   title: string;
   currentPath: string;
   children?: any;

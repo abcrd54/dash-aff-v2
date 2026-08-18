@@ -15,11 +15,16 @@
 
 | Item | File | Status |
 |------|------|--------|
-| JWT HMAC-SHA256 (custom) | `middleware/auth.ts` | ✅ |
-| Cookie session (httpOnly, 24h) | `routes/auth.tsx` | ✅ |
+| Session cookie (httpOnly, Strict, 24h) | `middleware/auth.ts` | ✅ |
+| 2FA Email OTP (Resend) | `routes/auth.tsx`, `lib/email.ts` | ✅ |
+| Rate limiting login (5/15m) | `index.tsx` | ✅ |
+| CSRF protection | `index.tsx` | ✅ |
+| Security headers (CSP, HSTS, etc) | `middleware/security.ts` | ✅ |
+| Zod input validation | `lib/validate.ts` | ✅ |
+| AES-256-GCM encryption | `lib/encrypt.ts` | ✅ |
 | Admin + user roles | `db/schema.sql` | ✅ |
-| CRUD user management | `routes/admin/users.tsx` | ✅ |
-| Password change / username change | `routes/account.tsx` | ✅ |
+| CRUD user management (email wajib) | `routes/admin/users.tsx` | ✅ |
+| Password change / username change / email set / 2FA toggle | `routes/account.tsx` | ✅ |
 
 ### 3. Bunsocial Onboarding
 
@@ -61,6 +66,10 @@
 
 | Env | File | Status |
 |-----|------|--------|
+| `RESEND_API_KEY`, `RESEND_FROM` | `.env` + `.env.example` | ✅ |
+| `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | `.env` + `.env.example` | ✅ |
+| `ENCRYPTION_KEY` | `.env` + `.env.example` | ✅ |
+| `ADMIN_EMAIL`, `ADMIN_INITIAL_PASSWORD` | `.env` + `.env.example` | ✅ |
 | `KUMAIL_URL`, `KUMAIL_API_KEY` | `.env` + `.env.example` | ✅ |
 | `BUNSOCIAL_URL`, `BUNSOCIAL_API_KEY` | `.env` + `.env.example` | ✅ |
 | `PERSONA_SERVICE_URL`, `PERSONA_SERVICE_API_KEY` | `.env` + `.env.example` | ✅ |
@@ -317,6 +326,9 @@ src/
 │   ├── bunsocial.ts
 │   ├── orchestrator.ts
 │   ├── platform-connect.ts
+│   ├── encrypt.ts                        # AES-256-GCM encryption
+│   ├── validate.ts                       # Zod schemas
+│   ├── email.ts                          # Resend OTP sender
 │   ├── puppeteer.ts                      # hanya dipakai jika perlu
 │   ├── news-caption.ts                   # 🔜
 │   ├── jadiapa-generate.ts               # 🔜
@@ -325,7 +337,8 @@ src/
 │   ├── auto-retry.ts                     # 🔜
 │   └── affiliate-link.ts                 # 🔜
 ├── middleware/
-│   └── auth.ts
+│   ├── auth.ts
+│   └── security.ts
 ├── routes/
 │   ├── auth.tsx
 │   ├── dashboard.tsx
@@ -458,31 +471,36 @@ GET /api/session/status
 
 ---
 
-## Auth Migration — Better Auth
+## Auth Migration — Custom 2FA with Zod + Resend
 
-### Kenapa Ganti?
-- JWT manual (custom HMAC-SHA256) → rawan bug, no standard
-- Tidak ada rate limiting → brute force risk
-- Tidak ada OTP / 2FA
-- Tidak ada audit log
+### Yang Sudah Dibangun
+- JWT manual (custom HMAC-SHA256) diganti dengan **session cookie JSON** (lebih sederhana, tanpa dependency JWT library)
+- CSRF protection via `hono/csrf` middleware
+- Rate limiting via `hono-rate-limiter`
 
-### Target: ganti ke library **Better Auth**
+### Fitur Baru
 
 | Fitur | Status |
 |-------|:------:|
-| Email OTP sign-in | 🔜 |
-| Username + password (fallback) | 🔜 |
-| Rate limiting (max 3 OTP attempt, auto expired) | 🔜 |
-| Role-based (admin / user) | 🔜 |
-| Session management (auto cookies) | 🔜 |
-| SQLite adapter (bun:sqlite) | 🔜 |
-| Hono integration (official) | 🔜 |
+| Username + password (step 1) | ✅ |
+| Email OTP (2FA, step 2) | ✅ |
+| Resend email service | ✅ |
+| Rate limiting (5 attempt / 15 menit) | ✅ |
+| Role-based (admin / user) | ✅ |
+| Session management (httpOnly, Strict, 24h) | ✅ |
+| SQLite (bun:sqlite) | ✅ |
+| Input validation (Zod) | ✅ |
+| CSRF protection | ✅ |
+| Security headers (CSP, HSTS, etc) | ✅ |
+| AES-256-GCM encryption (sensitive columns) | ✅ |
 
-### Flow Baru
+### Flow Login
 
 ```
-Login:  email → kirim OTP → input OTP → verify → session
-Reset:  email → kirim OTP → input OTP + password baru
+Login:  username + password → kirim OTP email → input OTP → verify → session
+Admin:  wajib set email saat create user → 2FA otomatis aktif
+User:   set email di halaman account → aktifkan 2FA
+```
 Logout: hapus session
 ```
 
@@ -812,21 +830,21 @@ Setup:
 | 1 | WAF (Cloudflare / Nginx) | 🔜 |
 | 2 | DDoS Protection | 🔜 |
 | 3 | SSL/TLS + HTTPS | 🔜 |
-| 4 | Security Headers | 🔜 |
-| 5 | Content Security Policy | 🔜 |
-| 6 | CSRF Protection | 🔜 |
+| 4 | Security Headers | ✅ |
+| 5 | Content Security Policy | ✅ |
+| 6 | CSRF Protection | ✅ |
 | 7 | XSS Protection | ✅ (TSX auto-escape) |
 | 8 | SQL Injection Protection | ✅ (parameterized queries) |
-| 9 | Input Validation | 🔜 |
-| 10 | Authentication + MFA | 🔜 (Better Auth) |
-| 11 | Secure Session Management | 🔜 (Better Auth) |
+| 9 | Input Validation | ✅ (Zod) |
+| 10 | Authentication + MFA (2FA Email OTP) | ✅ |
+| 11 | Secure Session Management | ✅ |
 | 12 | Access Control (RBAC) | ✅ (adminMiddleware) |
-| 13 | Rate Limiting | 🔜 |
+| 13 | Rate Limiting | ✅ |
 | 14 | Bot Protection | 🔜 |
 | 15 | API Security (auth + CORS) | 🔜 |
-| 16 | Secure Cookies | 🔜 (Better Auth) |
-| 17 | Database Security | ✅ (WAL, FK, bcrypt) |
-| 18 | Encryption | ✅ (bcrypt) |
+| 16 | Secure Cookies | ✅ |
+| 17 | Database Security | ✅ (WAL, FK, bcrypt, no plaintext) |
+| 18 | Encryption | ✅ (bcrypt + AES-256-GCM) |
 | 19 | Secrets Management | ✅ (.env, .gitignore) |
 | 20 | Secure Backups | 🔜 |
 | 21 | Logging & Monitoring | 🔜 |

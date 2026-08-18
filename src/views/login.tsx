@@ -3,9 +3,13 @@ import { raw } from "hono/html";
 
 interface LoginProps {
   error?: string;
+  showSetEmail?: boolean;
+  showContactAdmin?: boolean;
+  userId?: number;
+  username?: string;
 }
 
-const LoginPage: FC<LoginProps> = ({ error }) => {
+const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, userId, username }) => {
   return (
     <html lang="id">
       <head>
@@ -36,6 +40,23 @@ const LoginPage: FC<LoginProps> = ({ error }) => {
               <p class="text-slate-500 text-sm mt-1">Silakan login untuk melanjutkan</p>
             </div>
 
+            {showSetEmail && userId && (
+              <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-sm text-amber-800 font-medium">Email Belum Diatur</p>
+                <p class="text-xs text-amber-700 mt-1">
+                  Akun <strong>{username}</strong> belum memiliki email. Email diperlukan untuk 2FA OTP.
+                </p>
+              </div>
+            )}
+            {showContactAdmin && (
+              <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-800 font-medium">2FA Belum Aktif</p>
+                <p class="text-xs text-red-700 mt-1">
+                  Hubungi admin untuk mengaktifkan 2FA pada akun Anda.
+                </p>
+              </div>
+            )}
+
             <form method="POST" action="/login" class="space-y-5">
               <div>
                 <label for="username" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -48,6 +69,7 @@ const LoginPage: FC<LoginProps> = ({ error }) => {
                   required
                   autocomplete="username"
                   placeholder="Masukkan username"
+                  defaultvalue={username || ""}
                   class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>

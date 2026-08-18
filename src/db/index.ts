@@ -6,6 +6,63 @@ const DB_PATH = process.env.DB_PATH || "data/dam.db";
 
 let db: Database;
 
+function migrateBetterAuthSchema(database: Database): void {
+  // Better Auth requires TEXT id, but existing tables use INTEGER
+  // Create new auth tables mapping users.id (int) → TEXT string id
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS auth_user (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      email_verified INTEGER NOT NULL DEFAULT 0,
+      image TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS session (
+      id TEXT PRIMARY KEY,
+      token TEXT NOT NULL UNIQUE,
+      expires_at TEXT NOT NULL,
+      user_id TEXT NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE,
+      ip_address TEXT,
+      user_agent TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS account (
+      id TEXT PRIMARY KEY,
+      account_id TEXT NOT NULL,
+      provider_id TEXT NOT NULL,
+      user_id TEXT NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE,
+      access_token TEXT,
+      refresh_token TEXT,
+      id_token TEXT,
+      access_token_expires_at TEXT,
+      refresh_token_expires_at TEXT,
+      scope TEXT,
+      password TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(provider_id, account_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS verification (
+      id TEXT PRIMARY KEY,
+      identifier TEXT NOT NULL,
+      value TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+}
+
+export function getDBPath(): string {
+  return DB_PATH;
+}
+
 export function getDB(): Database {
   if (!db) {
     if (DB_PATH !== ":memory:") {
@@ -22,14 +79,10 @@ export function initDB(): void {
   const database = getDB();
   const schema = readFileSync(join(import.meta.dir, "schema.sql"), "utf-8");
   database.exec(schema);
+  migrateBetterAuthSchema(database);
 
   try {
     database.exec("ALTER TABLE affiliate_accounts ADD COLUMN team_id TEXT");
-  } catch {
-    // column already exists
-  }
-  try {
-    database.exec("ALTER TABLE affiliate_accounts ADD COLUMN password TEXT");
   } catch {
     // column already exists
   }
@@ -73,6 +126,16 @@ export function initDB(): void {
   } catch {
     // column already exists
   }
+  try {
+    database.exec("ALTER TABLE users ADD COLUMN email TEXT UNIQUE");
+  } catch {
+    // column already exists
+  }
+  try {
+    database.exec("ALTER TABLE users ADD COLUMN two_factor_enabled INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    // column already exists
+  }
 }
 
 export async function seedAdmin(): Promise<void> {
@@ -81,13 +144,29 @@ export async function seedAdmin(): Promise<void> {
     .query("SELECT id FROM users WHERE username = ?")
     .get("admin") as { id: number } | undefined;
 
-  if (existing) return;
+  if (existing) {
+    return;
+  }
 
-  const passwordHash = await Bun.password.hash("admin123", "bcrypt");
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@localhost";
+  const password = process.env.ADMIN_INITIAL_PASSWORD || generateRandomPassword();
+  const passwordHash = await Bun.password.hash(password, "bcrypt");
 
   database
-    .query("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)")
-    .run("admin", passwordHash, "admin");
+    .query("INSERT INTO users (username, password_hash, role, email) VALUES (?, ?, ?, ?)")
+    .run("admin", passwordHash, "admin", adminEmail);
 
-  console.log("✅ Admin user seeded: admin (change password on first login)");
+  console.log("✅ Admin user seeded");
+  console.log("   Username: admin");
+  console.log("   Email: " + adminEmail);
+  console.log("   Password: " + password + " (change immediately!)");
+}
+
+function generateRandomPassword(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+  let pwd = "";
+  for (let i = 0; i < 20; i++) {
+    pwd += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return pwd;
 }

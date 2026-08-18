@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import Layout from "../../components/layout";
-import type { JWTPayload } from "../../middleware/auth";
+import type { AuthUser } from "../../middleware/auth";
 
 interface GroupConfig {
   identity: string;
@@ -13,7 +13,7 @@ interface GroupConfig {
 }
 
 interface GeneratePageProps {
-  user: JWTPayload;
+  user: AuthUser;
   groups: GroupConfig[];
   personas: Array<{ id: string; name: string }>;
   autoPostActive: boolean;

@@ -1,12 +1,16 @@
-import { getDB } from "../db";
+﻿import { getDB } from "../db";
 
 export interface User {
   id: number;
   username: string;
+  email: string | null;
   role: "admin" | "user";
+  two_factor_enabled: number;
   created_at: string;
   updated_at: string;
 }
+
+export interface AuthUser { id: number; username: string; email: string | null; role: "admin" | "user"; two_factor_enabled: number; }
 
 export interface Post {
   id: number;
@@ -29,26 +33,32 @@ export function getUserByUsername(
 
 export function getUserById(id: number): User | undefined {
   return getDB()
-    .query("SELECT id, username, role, created_at, updated_at FROM users WHERE id = ?")
+    .query("SELECT id, username, email, role, two_factor_enabled, created_at, updated_at FROM users WHERE id = ?")
     .get(id) as User | undefined;
+}
+
+export function getUserByEmail(email: string): User | undefined {
+  return getDB()
+    .query("SELECT id, username, email, role, two_factor_enabled, created_at, updated_at FROM users WHERE email = ?")
+    .get(email) as User | undefined;
 }
 
 export function getAllUsers(): User[] {
   return getDB()
-    .query("SELECT id, username, role, created_at, updated_at FROM users ORDER BY id DESC")
+    .query("SELECT id, username, email, role, two_factor_enabled, created_at, updated_at FROM users ORDER BY id DESC")
     .all() as User[];
 }
 
-export function createUser(username: string, passwordHash: string, role: "admin" | "user"): User {
+export function createUser(username: string, email: string, passwordHash: string, role: "admin" | "user"): User {
   const result = getDB()
-    .query("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)")
-    .run(username, passwordHash, role);
+    .query("INSERT INTO users (username, email, password_hash, role, two_factor_enabled) VALUES (?, ?, ?, ?, 1)")
+    .run(username, email, passwordHash, role);
   return getUserById(Number(result.lastInsertRowid))!;
 }
 
 export function updateUser(
   id: number,
-  data: { username?: string; password_hash?: string; role?: string }
+  data: { username?: string; email?: string; password_hash?: string; role?: string; two_factor_enabled?: number }
 ): User | undefined {
   const sets: string[] = [];
   const values: (string | number)[] = [];
@@ -57,6 +67,10 @@ export function updateUser(
     sets.push("username = ?");
     values.push(data.username);
   }
+  if (data.email !== undefined) {
+    sets.push("email = ?");
+    values.push(data.email);
+  }
   if (data.password_hash !== undefined) {
     sets.push("password_hash = ?");
     values.push(data.password_hash);
@@ -64,6 +78,10 @@ export function updateUser(
   if (data.role !== undefined) {
     sets.push("role = ?");
     values.push(data.role);
+  }
+  if (data.two_factor_enabled !== undefined) {
+    sets.push("two_factor_enabled = ?");
+    values.push(data.two_factor_enabled);
   }
 
   if (sets.length === 0) return getUserById(id);
@@ -241,7 +259,6 @@ export function createAffiliateAccount(data: {
   user_id: number;
   name: string;
   email: string;
-  password: string;
   password_hash: string;
   first_name: string;
   last_name: string;
@@ -251,9 +268,9 @@ export function createAffiliateAccount(data: {
 }): AffiliateAccount {
   const result = getDB()
     .query(
-      "INSERT INTO affiliate_accounts (user_id, name, email, password, password_hash, first_name, last_name, org_name, identity, timezone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO affiliate_accounts (user_id, name, email, password_hash, first_name, last_name, org_name, identity, timezone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )
-    .run(data.user_id, data.name, data.email, data.password, data.password_hash, data.first_name, data.last_name, data.org_name, data.identity || "", data.timezone, "pending");
+    .run(data.user_id, data.name, data.email, data.password_hash, data.first_name, data.last_name, data.org_name, data.identity || "", data.timezone, "pending");
   return getAffiliateAccountById(Number(result.lastInsertRowid))!;
 }
 
