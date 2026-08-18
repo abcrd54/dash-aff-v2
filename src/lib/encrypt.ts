@@ -1,6 +1,6 @@
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 
-function getKey(): CryptoKey {
+async function getKey(): Promise<CryptoKey> {
   const encoder = new TextEncoder();
   const keyMaterial = encoder.encode(ENCRYPTION_KEY!).slice(0, 32);
   return crypto.subtle.importKey(

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware, adminMiddleware, getSession } from "../../middleware/auth";
-import { getAllUsers, createUser, updateUser, deleteUser, getUserByUsername, getUserById } from "../../lib/db";
+import { getAllUsers, createUser, updateUser, deleteUser, getUserByUsername, getUserByEmail, getUserById } from "../../lib/db";
 import { createUserSchema, updateUserSchema } from "../../lib/validate";
 import UsersPage from "../../views/admin/users";
 
@@ -34,7 +34,7 @@ adminUserRoutes.post("/admin/users", authMiddleware, adminMiddleware, async (c) 
     return c.redirect("/admin/users?error=" + encodeURIComponent("Username sudah digunakan"));
   }
 
-  const existingEmail = getUserByUsername("")?.email === email;
+  const existingEmail = getUserByEmail(email);
   if (existingEmail) {
     return c.redirect("/admin/users?error=" + encodeURIComponent("Email sudah digunakan"));
   }
@@ -86,6 +86,8 @@ adminUserRoutes.put("/admin/users/:id", authMiddleware, adminMiddleware, async (
   if (twoFactorValue !== undefined) data.two_factor_enabled = twoFactorValue;
 
   updateUser(id, data);
+
+  return c.redirect("/admin/users?success=" + encodeURIComponent("User berhasil diupdate"));
 });
 
 adminUserRoutes.delete("/admin/users/:id", authMiddleware, adminMiddleware, (c) => {

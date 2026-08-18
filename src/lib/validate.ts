@@ -1,7 +1,15 @@
 import { z } from "zod/v4";
 
+const passwordRule = z
+  .string()
+  .min(8, "Password minimal 8 karakter")
+  .max(100)
+  .regex(/[A-Z]/, "Password harus mengandung huruf besar")
+  .regex(/[0-9]/, "Password harus mengandung angka")
+  .regex(/[^A-Za-z0-9]/, "Password harus mengandung karakter spesial");
+
 export const loginSchema = z.object({
-  username: z.string().min(1, "Username wajib diisi").max(50),
+  email: z.string().email("Email tidak valid"),
   password: z.string().min(1, "Password wajib diisi").max(100),
 });
 
@@ -15,21 +23,21 @@ export const otpSchema = z.object({
 export const createUserSchema = z.object({
   username: z.string().min(3, "Username minimal 3 karakter").max(50),
   email: z.string().email("Email tidak valid"),
-  password: z.string().min(6, "Password minimal 6 karakter").max(100),
+  password: passwordRule,
   role: z.enum(["admin", "user"]).default("user"),
 });
 
 export const updateUserSchema = z.object({
   username: z.string().min(3).max(50).optional(),
   email: z.string().email("Email tidak valid").optional(),
-  password: z.string().min(6).max(100).optional(),
+  password: passwordRule.optional(),
   role: z.enum(["admin", "user"]).optional(),
   two_factor_enabled: z.union([z.literal("0"), z.literal("1"), z.literal(0), z.literal(1)]).optional(),
 });
 
 export const changePasswordSchema = z.object({
   current_password: z.string().min(1),
-  new_password: z.string().min(6, "Password baru minimal 6 karakter"),
+  new_password: passwordRule,
 });
 
 export const setEmailSchema = z.object({

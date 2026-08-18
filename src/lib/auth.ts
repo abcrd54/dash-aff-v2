@@ -39,11 +39,11 @@ export const auth = betterAuth({
         period: 5, // 5 menit
         digits: 6,
         async sendOTP({ user, otp }) {
-          const {getUserById} = await import("../db");
-          const userData = getUserById(user.id as number);
+          const { getUserByEmail: getUserByEmailFromDb } = await import("../lib/db");
+          const userData = getUserByEmailFromDb(user.email);
           
           if (!userData?.email) {
-            console.error("[2FA] No email for user:", user.id);
+            console.error("[2FA] No email for user:", user.email);
             return;
           }
           

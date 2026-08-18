@@ -204,6 +204,7 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
               </select>
             </div>
             <div class="flex items-center gap-2">
+              <input type="hidden" name="two_factor_enabled" value="0" />
               <input type="checkbox" id="editTwoFactor" name="two_factor_enabled" value="1" class="w-4 h-4 text-blue-600 rounded" />
               <label for="editTwoFactor" class="text-sm text-slate-700">2FA (Email OTP) Aktif</label>
             </div>

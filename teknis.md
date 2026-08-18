@@ -497,7 +497,7 @@ GET /api/session/status
 ### Flow Login
 
 ```
-Login:  username + password → kirim OTP email → input OTP → verify → session
+Login:  email + password → kirim OTP email → input OTP → verify → session
 Admin:  wajib set email saat create user → 2FA otomatis aktif
 User:   set email di halaman account → aktifkan 2FA
 ```

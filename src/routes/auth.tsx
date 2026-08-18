@@ -2,10 +2,11 @@ import { Hono } from "hono";
 import { setCookie, deleteCookie, getCookie } from "hono/cookie";
 import LoginPage from "../views/login";
 import VerifyOtpPage from "../views/login-verify";
-import { getUserByUsername } from "../lib/db";
+import { getUserByEmail } from "../lib/db";
 import { getDB } from "../db";
 import { sendOTP } from "../lib/email";
 import { loginSchema, otpSchema } from "../lib/validate";
+import { createSessionCookie } from "../middleware/auth";
 
 const authRoutes = new Hono();
 
@@ -32,7 +33,8 @@ function storeOTP(userId: number, otp: string): void {
 
   db.query("DELETE FROM verification WHERE identifier = ?").run(`2fa_${userId}`);
 
-  db.query("INSERT INTO verification (identifier, value, expires_at) VALUES (?, ?, ?)").run(
+  db.query("INSERT INTO verification (id, identifier, value, expires_at) VALUES (?, ?, ?, ?)").run(
+    crypto.randomUUID(),
     `2fa_${userId}`,
     otp,
     expiresAt
@@ -45,17 +47,17 @@ authRoutes.get("/login", (c) => {
 
 authRoutes.post("/login", async (c) => {
   const body = await c.req.parseBody();
-  const result = loginSchema.safeParse({ username: String(body.username || ""), password: String(body.password || "") });
+  const result = loginSchema.safeParse({ email: String(body.email || "").trim().toLowerCase(), password: String(body.password || "") });
 
   if (!result.success) {
     return c.html(<LoginPage error={result.error.issues.map(i => i.message).join(", ")} />);
   }
 
-  const { username, password } = result.data;
+  const { email, password } = result.data;
 
-  const user = getUserByUsername(username);
+  const user = getUserByEmail(email);
   if (!user || !(await Bun.password.verify(password, user.password_hash, "bcrypt"))) {
-    return c.html(<LoginPage error="Username atau password salah." />);
+    return c.html(<LoginPage error="Email atau password salah." />);
   }
 
   if (!user.email) {
@@ -118,11 +120,11 @@ authRoutes.post("/login/verify-otp", async (c) => {
     return c.redirect("/login?error=" + encodeURIComponent("Session expired."));
   }
 
-  if (!otp || otp.length !== 6 || !/^\d+$/.test(otp)) {
+  const otpResult = otpSchema.safeParse({ otp });
+  if (!otpResult.success) {
     return c.redirect("/login/verify-otp?error=" + encodeURIComponent("Kode OTP harus 6 digit angka."));
   }
 
-  const user = getUserByUsername("");
   const dbUser = getDB()
     .query("SELECT id, username, email, role FROM users WHERE id = ?")
     .get(userId) as { id: number; username: string; email: string | null; role: string } | undefined;
@@ -131,7 +133,7 @@ authRoutes.post("/login/verify-otp", async (c) => {
     return c.redirect("/login?error=" + encodeURIComponent("User tidak ditemukan."));
   }
 
-  const valid = getPendingOTP(userId, otp);
+  const valid = getPendingOTP(userId, otpResult.data.otp);
 
   deleteCookie(c, "pending_user_id", {
     path: "/",
@@ -144,7 +146,7 @@ authRoutes.post("/login/verify-otp", async (c) => {
     return c.redirect("/login/verify-otp?error=" + encodeURIComponent("Kode OTP salah atau sudah kadaluarsa."));
   }
 
-  setCookie(c, "session", JSON.stringify({
+  setCookie(c, "session", await createSessionCookie({
     id: dbUser.id,
     username: dbUser.username,
     role: dbUser.role,

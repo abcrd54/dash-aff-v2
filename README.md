@@ -10,7 +10,7 @@ cp .env.example .env
 # Edit .env — set RESEND_API_KEY, BETTER_AUTH_SECRET, ENCRYPTION_KEY (min 32 chars)
 bun install && bun run start
 # → http://localhost:4000
-# Login: admin / (password dari console output saat seed)
+# Login: admin@test.com / Admin123# (change on first login)
 ```
 
 ## Features

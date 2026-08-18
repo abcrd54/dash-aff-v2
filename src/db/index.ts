@@ -148,8 +148,8 @@ export async function seedAdmin(): Promise<void> {
     return;
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@localhost";
-  const password = process.env.ADMIN_INITIAL_PASSWORD || generateRandomPassword();
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@test.com";
+  const password = process.env.ADMIN_INITIAL_PASSWORD || "Admin123#";
   const passwordHash = await Bun.password.hash(password, "bcrypt");
 
   database
@@ -160,13 +160,4 @@ export async function seedAdmin(): Promise<void> {
   console.log("   Username: admin");
   console.log("   Email: " + adminEmail);
   console.log("   Password: " + password + " (change immediately!)");
-}
-
-function generateRandomPassword(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
-  let pwd = "";
-  for (let i = 0; i < 20; i++) {
-    pwd += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return pwd;
 }

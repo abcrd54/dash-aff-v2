@@ -37,10 +37,10 @@ export function getUserById(id: number): User | undefined {
     .get(id) as User | undefined;
 }
 
-export function getUserByEmail(email: string): User | undefined {
+export function getUserByEmail(email: string): (User & { password_hash: string }) | undefined {
   return getDB()
-    .query("SELECT id, username, email, role, two_factor_enabled, created_at, updated_at FROM users WHERE email = ?")
-    .get(email) as User | undefined;
+    .query("SELECT * FROM users WHERE email = ?")
+    .get(email) as (User & { password_hash: string }) | undefined;
 }
 
 export function getAllUsers(): User[] {
