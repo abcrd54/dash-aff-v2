@@ -37,13 +37,6 @@ export async function signup(email: string, password: string) {
   );
 }
 
-export async function verifyLink(url: string) {
-  return request<{ verified: boolean; status: number; finalUrl: string }>(
-    "/api/auth/verify-link",
-    { method: "POST", body: JSON.stringify({ url }) }
-  );
-}
-
 export async function getToken(email: string, password: string) {
   return request<{ accessToken: string; tokenType: string; expiresIn: number }>(
     "/api/auth/token",

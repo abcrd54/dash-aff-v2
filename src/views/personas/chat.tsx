@@ -49,7 +49,7 @@ const ChatPage: FC<ChatPageProps> = ({ user, personaId, personaName, persona, ws
       </div>
 
       <script dangerouslySetInnerHTML={{ __html: `
-        const WS_URL = "${wsUrl}";
+        const WS_URL = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "${wsUrl}";
         let ws = null;
         let isStreaming = false;
         let pendingMessages = [];

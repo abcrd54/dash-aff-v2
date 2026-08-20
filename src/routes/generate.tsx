@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { getAffiliateAccounts, getGroupAutoPostConfigs, hasAnyAutoPostEnabled, hasAnyAutoGenerateEnabled, getUserPersonas } from "../lib/db";
+import { getAffiliateAccounts, getGroupAutoPostConfigs, ensureGroupAutoPostConfig, updateGroupAutoPostConfig, hasAnyAutoPostEnabled, hasAnyAutoGenerateEnabled } from "../lib/db";
 import GeneratePage from "../views/generate/index";
 
 const generateRoutes = new Hono();
@@ -18,17 +18,13 @@ generateRoutes.get("/generate", authMiddleware, (c) => {
     return {
       identity,
       niche: cfg?.niche || "",
+      isPersona: cfg ? cfg.is_persona === 1 : true,
       autoGenerateEnabled: cfg?.auto_generate_enabled === 1,
       autoPostEnabled: cfg?.auto_post_enabled === 1,
       dailyPostCount: cfg?.daily_post_count || 5,
       startTime: cfg?.start_time || "12:00",
     };
   });
-
-  const personas = getUserPersonas(user.id).map((p) => ({
-    id: p.persona_id,
-    name: p.persona_name,
-  }));
 
   const autoPostActive = hasAnyAutoPostEnabled(user.id);
   const autoGenerateActive = hasAnyAutoGenerateEnabled(user.id);
@@ -41,7 +37,6 @@ generateRoutes.get("/generate", authMiddleware, (c) => {
     <GeneratePage
       user={user}
       groups={groups}
-      personas={personas}
       autoPostActive={autoPostActive}
       autoGenerateActive={autoGenerateActive}
       error={error}
@@ -50,13 +45,27 @@ generateRoutes.get("/generate", authMiddleware, (c) => {
   );
 });
 
+generateRoutes.post("/api/generate/group/persona", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+  const identity = String(body.identity || "").trim();
+  if (!identity) {
+    return c.json({ success: false, error: "Grup harus dipilih" }, 400);
+  }
+
+  ensureGroupAutoPostConfig(user.id, identity);
+  updateGroupAutoPostConfig(user.id, identity, { is_persona: body.isPersona ? 1 : 0 });
+
+  return c.json({ success: true });
+});
+
 generateRoutes.post("/api/generate/caption", authMiddleware, async (c) => {
   const body = await c.req.json();
-  const personaId = body.personaId;
+  const groupName = body.groupName;
   const topic = body.topic;
 
-  if (!personaId || !topic) {
-    return c.json({ success: false, error: "Persona dan topik harus diisi" }, 400);
+  if (!groupName || !topic) {
+    return c.json({ success: false, error: "Grup dan topik harus diisi" }, 400);
   }
 
   return c.json({

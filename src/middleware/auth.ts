@@ -2,7 +2,11 @@ import { getCookie } from "hono/cookie";
 import type { Context, Next } from "hono";
 import { getUserById } from "../lib/db";
 
-const SESSION_SECRET = process.env.BETTER_AUTH_SECRET || process.env.JWT_SECRET || "fallback-secret-change-me";
+const configuredSecret = process.env.BETTER_AUTH_SECRET || process.env.JWT_SECRET;
+if (process.env.NODE_ENV === "production" && (!configuredSecret || configuredSecret.length < 32)) {
+  throw new Error("BETTER_AUTH_SECRET or JWT_SECRET must be at least 32 characters in production");
+}
+export const SESSION_SECRET = configuredSecret || crypto.randomUUID();
 
 export interface AuthUser {
   id: number;
@@ -10,10 +14,7 @@ export interface AuthUser {
   email: string | null;
   role: "admin" | "user";
   two_factor_enabled: number;
-}
-
-export function getAuthUser(c: Context): AuthUser | null {
-  return c.get("authUser") || null;
+  session_version: number;
 }
 
 export function getSession(c: Context): AuthUser | null {
@@ -50,6 +51,28 @@ async function verifyPayload(payload: string, signature: string): Promise<boolea
   }
 }
 
+export interface SessionPayload {
+  id: number;
+  username: string;
+  role: string;
+  email?: string | null;
+  exp: number;
+  iat: number;
+  sv: number;
+}
+
+export async function verifySessionCookie(sessionStr: string): Promise<SessionPayload | null> {
+  try {
+    const parts = sessionStr.split(".");
+    if (parts.length !== 2 || !(await verifyPayload(parts[0], parts[1]))) return null;
+    const data = JSON.parse(atob(parts[0])) as SessionPayload;
+    if (!data.id || !data.username || !data.exp || data.exp <= Math.floor(Date.now() / 1000)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function authMiddleware(c: Context, next: Next) {
   const sessionStr = getCookie(c, "session");
   
@@ -69,9 +92,9 @@ export async function authMiddleware(c: Context, next: Next) {
       return c.redirect("/login");
     }
 
-    const sessionData = JSON.parse(atob(payload)) as { id: number; username: string; role: string; email?: string };
+    const sessionData = JSON.parse(atob(payload)) as { id: number; username: string; role: string; email?: string; exp?: number; sv?: number };
     
-    if (!sessionData.id || !sessionData.username) {
+    if (!sessionData.id || !sessionData.username || !sessionData.exp || sessionData.exp <= Math.floor(Date.now() / 1000)) {
       return c.redirect("/login");
     }
 
@@ -83,6 +106,9 @@ export async function authMiddleware(c: Context, next: Next) {
     if (user.username !== sessionData.username) {
       return c.redirect("/logout");
     }
+    if (sessionData.sv !== user.session_version) {
+      return c.redirect("/login");
+    }
 
     c.set("authUser", {
       id: user.id,
@@ -90,6 +116,7 @@ export async function authMiddleware(c: Context, next: Next) {
       email: user.email,
       role: user.role,
       two_factor_enabled: user.two_factor_enabled,
+      session_version: user.session_version,
     });
 
     await next();
@@ -106,8 +133,16 @@ export async function adminMiddleware(c: Context, next: Next) {
   await next();
 }
 
-export async function createSessionCookie(payload: { id: number; username: string; role: string; email?: string | null }): Promise<string> {
-  const encoded = btoa(JSON.stringify(payload));
+export async function createSessionCookie(
+  payload: { id: number; username: string; role: string; email?: string | null; session_version: number },
+  ttlSeconds = 60 * 60 * 24
+): Promise<string> {
+  const encoded = btoa(JSON.stringify({
+    ...payload,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+    sv: payload.session_version,
+  }));
   const sig = await signPayload(encoded);
   return `${encoded}.${sig}`;
 }

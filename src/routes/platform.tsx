@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { getAffiliateAccounts, getConnectionsByAccount, updateAffiliateAccount, getConnection, createConnection } from "../lib/db";
+import { getAffiliateAccounts, getAffiliateAccountsWithSecrets, getConnectionsByAccount, updateAffiliateAccount, getConnection, createConnection } from "../lib/db";
 import { getPlatformList, createPortalLink, checkAndSyncConnection, syncChannel, syncDisconnect, platformNeedsChannel } from "../lib/platform-connect";
 import PlatformConnectPage from "../views/platform/connect";
 
@@ -35,7 +35,7 @@ platformRoutes.post("/api/platform/portal", authMiddleware, async (c) => {
     return c.json({ error: "accountId and platform required" }, 400);
   }
 
-  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  const account = (await getAffiliateAccountsWithSecrets(user.id)).find((a) => a.id === accountId);
   if (!account || !account.api_key || !account.team_id) {
     return c.json({ error: "Account not ready" }, 400);
   }
@@ -64,7 +64,7 @@ platformRoutes.post("/api/platform/check-status", authMiddleware, async (c) => {
     return c.json({ error: "accountId and platform required" }, 400);
   }
 
-  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  const account = (await getAffiliateAccountsWithSecrets(user.id)).find((a) => a.id === accountId);
   if (!account || !account.api_key || !account.team_id) {
     return c.json({ error: "Account not ready" }, 400);
   }
@@ -96,7 +96,7 @@ platformRoutes.post("/api/platform/set-channel", authMiddleware, async (c) => {
     return c.json({ error: "accountId, platform, and channelId required" }, 400);
   }
 
-  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  const account = (await getAffiliateAccountsWithSecrets(user.id)).find((a) => a.id === accountId);
   if (!account || !account.api_key || !account.team_id) {
     return c.json({ error: "Account not ready" }, 400);
   }
@@ -120,7 +120,7 @@ platformRoutes.post("/api/platform/disconnect", authMiddleware, async (c) => {
     return c.json({ error: "accountId and platform required" }, 400);
   }
 
-  const account = getAffiliateAccounts(user.id).find((a) => a.id === accountId);
+  const account = (await getAffiliateAccountsWithSecrets(user.id)).find((a) => a.id === accountId);
   if (!account || !account.api_key || !account.team_id) {
     return c.json({ error: "Account not ready" }, 400);
   }

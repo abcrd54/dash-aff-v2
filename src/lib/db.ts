@@ -1,16 +1,17 @@
 ﻿import { getDB } from "../db";
 
+import { decrypt } from "./encrypt";
+
 export interface User {
   id: number;
   username: string;
   email: string | null;
   role: "admin" | "user";
   two_factor_enabled: number;
+  session_version: number;
   created_at: string;
   updated_at: string;
 }
-
-export interface AuthUser { id: number; username: string; email: string | null; role: "admin" | "user"; two_factor_enabled: number; }
 
 export interface Post {
   id: number;
@@ -33,7 +34,7 @@ export function getUserByUsername(
 
 export function getUserById(id: number): User | undefined {
   return getDB()
-    .query("SELECT id, username, email, role, two_factor_enabled, created_at, updated_at FROM users WHERE id = ?")
+    .query("SELECT id, username, email, role, two_factor_enabled, session_version, created_at, updated_at FROM users WHERE id = ?")
     .get(id) as User | undefined;
 }
 
@@ -45,7 +46,7 @@ export function getUserByEmail(email: string): (User & { password_hash: string }
 
 export function getAllUsers(): User[] {
   return getDB()
-    .query("SELECT id, username, email, role, two_factor_enabled, created_at, updated_at FROM users ORDER BY id DESC")
+    .query("SELECT id, username, email, role, two_factor_enabled, session_version, created_at, updated_at FROM users ORDER BY id DESC")
     .all() as User[];
 }
 
@@ -206,16 +207,10 @@ export function linkUserPersona(userId: number, personaId: string, serviceSlug: 
     .run(userId, personaId, serviceSlug, personaName);
 }
 
-export function updatePersonaSession(personaId: string, sessionId: string): void {
+export function unlinkUserPersona(userId: number, personaId: string): void {
   getDB()
-    .query("UPDATE user_personas SET session_id = ? WHERE persona_id = ?")
-    .run(sessionId, personaId);
-}
-
-export function unlinkUserPersona(personaId: string): void {
-  getDB()
-    .query("DELETE FROM user_personas WHERE persona_id = ?")
-    .run(personaId);
+    .query("DELETE FROM user_personas WHERE user_id = ? AND persona_id = ?")
+    .run(userId, personaId);
 }
 
 // ==================== AFFILIATE ACCOUNTS ====================
@@ -249,6 +244,28 @@ export function getAffiliateAccounts(userId: number): AffiliateAccount[] {
     .all(userId) as AffiliateAccount[];
 }
 
+export function revokeUserSessions(id: number): void {
+  getDB().query("UPDATE users SET session_version = session_version + 1, updated_at = datetime('now') WHERE id = ?").run(id);
+}
+
+export function addSecurityAuditLog(data: {
+  user_id?: number; event: string; ip_address?: string; user_agent?: string; metadata?: Record<string, unknown>;
+}): void {
+  getDB().query(
+    "INSERT INTO security_audit_logs (user_id, event, ip_address, user_agent, metadata) VALUES (?, ?, ?, ?, ?)"
+  ).run(data.user_id || null, data.event, data.ip_address || null, data.user_agent || null,
+    data.metadata ? JSON.stringify(data.metadata) : null);
+}
+
+export async function getAffiliateAccountsWithSecrets(userId: number): Promise<AffiliateAccount[]> {
+  return Promise.all(getAffiliateAccounts(userId).map(async (account) => ({
+    ...account,
+    password: account.password ? await decrypt(account.password) : null,
+    access_token: account.access_token ? await decrypt(account.access_token) : null,
+    api_key: account.api_key ? await decrypt(account.api_key) : null,
+  })));
+}
+
 export function getAffiliateAccountById(id: number): AffiliateAccount | undefined {
   return getDB()
     .query("SELECT * FROM affiliate_accounts WHERE id = ?")
@@ -259,6 +276,7 @@ export function createAffiliateAccount(data: {
   user_id: number;
   name: string;
   email: string;
+  password?: string;
   password_hash: string;
   first_name: string;
   last_name: string;
@@ -268,9 +286,9 @@ export function createAffiliateAccount(data: {
 }): AffiliateAccount {
   const result = getDB()
     .query(
-      "INSERT INTO affiliate_accounts (user_id, name, email, password_hash, first_name, last_name, org_name, identity, timezone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO affiliate_accounts (user_id, name, email, password, password_hash, first_name, last_name, org_name, identity, timezone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )
-    .run(data.user_id, data.name, data.email, data.password_hash, data.first_name, data.last_name, data.org_name, data.identity || "", data.timezone, "pending");
+    .run(data.user_id, data.name, data.email, data.password || null, data.password_hash, data.first_name, data.last_name, data.org_name, data.identity || "", data.timezone, "pending");
   return getAffiliateAccountById(Number(result.lastInsertRowid))!;
 }
 
@@ -306,11 +324,6 @@ export function updateAffiliateAccount(id: number, data: {
     .run(...values);
 
   return getAffiliateAccountById(id);
-}
-
-export function deleteAffiliateAccount(id: number): boolean {
-  const result = getDB().query("DELETE FROM affiliate_accounts WHERE id = ?").run(id);
-  return result.changes > 0;
 }
 
 // ==================== SOCIAL CONNECTIONS ====================
@@ -437,10 +450,10 @@ export function createAffiliateProduct(data: {
   return getAffiliateProductById(Number(result.lastInsertRowid))!;
 }
 
-export function deleteAffiliateProduct(id: number): boolean {
+export function deleteAffiliateProduct(id: number, userId: number): boolean {
   const result = getDB()
-    .query("DELETE FROM affiliate_products WHERE id = ?")
-    .run(id);
+    .query("DELETE FROM affiliate_products WHERE id = ? AND user_id = ?")
+    .run(id, userId);
   return result.changes > 0;
 }
 
@@ -490,10 +503,10 @@ export function createSocialPost(data: {
   return getSocialPostById(Number(result.lastInsertRowid))!;
 }
 
-export function deleteSocialPost(id: number): boolean {
+export function deleteSocialPost(id: number, userId: number): boolean {
   const result = getDB()
-    .query("DELETE FROM social_posts WHERE id = ?")
-    .run(id);
+    .query("DELETE FROM social_posts WHERE id = ? AND user_id = ?")
+    .run(id, userId);
   return result.changes > 0;
 }
 
@@ -536,6 +549,7 @@ export interface GroupAutoPostConfig {
   user_id: number;
   identity: string;
   niche: string;
+  is_persona: number;
   auto_post_enabled: number;
   auto_generate_enabled: number;
   daily_post_count: number;
@@ -561,7 +575,7 @@ export function ensureGroupAutoPostConfig(userId: number, identity: string): Gro
   let config = getGroupAutoPostConfig(userId, identity);
   if (!config) {
     getDB()
-      .query("INSERT INTO group_auto_post_config (user_id, identity) VALUES (?, ?)")
+      .query("INSERT INTO group_auto_post_config (user_id, identity, is_persona) VALUES (?, ?, 1)")
       .run(userId, identity);
     config = getGroupAutoPostConfig(userId, identity)!;
   }
@@ -573,6 +587,7 @@ export function updateGroupAutoPostConfig(
   identity: string,
   data: {
     niche?: string;
+    is_persona?: number;
     auto_post_enabled?: number;
     auto_generate_enabled?: number;
     daily_post_count?: number;
@@ -584,6 +599,7 @@ export function updateGroupAutoPostConfig(
   const values: (string | number)[] = [];
 
   if (data.niche !== undefined) { sets.push("niche = ?"); values.push(data.niche); }
+  if (data.is_persona !== undefined) { sets.push("is_persona = ?"); values.push(data.is_persona); }
   if (data.auto_post_enabled !== undefined) { sets.push("auto_post_enabled = ?"); values.push(data.auto_post_enabled); }
   if (data.auto_generate_enabled !== undefined) { sets.push("auto_generate_enabled = ?"); values.push(data.auto_generate_enabled); }
   if (data.daily_post_count !== undefined) { sets.push("daily_post_count = ?"); values.push(data.daily_post_count); }

@@ -1,4 +1,4 @@
-import { getAffiliateAccounts, getConnectionsByAccount, addPostLog } from "./db";
+import { getAffiliateAccountsWithSecrets, getConnectionsByAccount, addPostLog } from "./db";
 
 const BUNDLE_API = "https://api.bundle.social/api/v1";
 
@@ -187,7 +187,7 @@ export async function sendPostToGroup(
     placement?: "caption" | "comment";
   }
 ): Promise<PostResult[]> {
-  const accounts = getAffiliateAccounts(userId);
+  const accounts = await getAffiliateAccountsWithSecrets(userId);
   const groupAccounts = accounts.filter(
     (a) => a.status === "done" && (a.identity || "Uncategorized") === identity && a.api_key && a.team_id
   );

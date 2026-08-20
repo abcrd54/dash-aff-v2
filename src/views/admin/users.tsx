@@ -95,8 +95,8 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
         <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-4 sm:p-6" onclick="event.stopPropagation()">
           <h3 class="text-lg font-semibold text-slate-800 mb-4">Tambah User Baru</h3>
           <form
-            method="POST"
-            action="/admin/users"
+            id="createUserForm"
+            onsubmit="return submitCreateUser(event)"
             class="space-y-4"
           >
             <div>
@@ -235,6 +235,32 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
         }
         function closeCreateUserModal() {
           document.getElementById('createUserModal').classList.add('hidden');
+        }
+        function submitCreateUser(event) {
+          event.preventDefault();
+          var form = document.getElementById('createUserForm');
+          var data = new FormData(form);
+          var btn = form.querySelector('button[type="submit"]');
+          var original = btn.textContent;
+          btn.textContent = 'Menyimpan...';
+          btn.disabled = true;
+          fetch('/admin/users', { method: 'POST', body: data }).then(function(r) { return r.json(); }).then(function(res) {
+            btn.textContent = original;
+            btn.disabled = false;
+            if (res.success) {
+              showToast('success', 'Sukses', 'User berhasil dibuat');
+              form.reset();
+              closeCreateUserModal();
+              setTimeout(function() { window.location.reload(); }, 800);
+            } else {
+              Swal.fire({ icon: 'error', title: 'Error', text: res.error || 'Gagal membuat user', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true });
+            }
+          }).catch(function() {
+            btn.textContent = original;
+            btn.disabled = false;
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true });
+          });
+          return false;
         }
         function openEditUserModal() {
           document.getElementById('editUserModal').classList.remove('hidden');

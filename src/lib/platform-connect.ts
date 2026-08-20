@@ -109,21 +109,6 @@ export async function setChannel(
   });
 }
 
-export async function refreshChannels(
-  apiKey: string,
-  teamId: string,
-  platform: string
-): Promise<void> {
-  await bundleFetch("/social-account/refresh-channels", {
-    method: "POST",
-    apiKey,
-    body: JSON.stringify({
-      type: platform.toUpperCase(),
-      teamId,
-    }),
-  });
-}
-
 export async function disconnectSocialAccount(
   apiKey: string,
   teamId: string,

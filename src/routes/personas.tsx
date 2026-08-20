@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { getUserPersonas, linkUserPersona, unlinkUserPersona } from "../lib/db";
+import { getUserPersonas, getPersonaOwner, linkUserPersona, unlinkUserPersona } from "../lib/db";
 import { getServiceClient } from "../lib/proxy";
 import { getServices } from "../lib/config";
 import PersonaListPage from "../views/personas/index";
@@ -64,17 +64,21 @@ personasRoutes.post("/personas", authMiddleware, async (c) => {
 });
 
 personasRoutes.post("/personas/:id/delete", authMiddleware, async (c) => {
+  const user = getSession(c)!;
   const personaId = c.req.param("id");
-  let deleted = false;
+  const owner = getPersonaOwner(personaId);
+  if (!owner || owner.user_id !== user.id) {
+    return c.redirect("/personas");
+  }
+
   try {
     const aff = getServiceClient("aff-personal");
     await aff.deleteJSON(`/api/personas/${personaId}`);
-    deleted = true;
   } catch (e: any) {
     if (!e.message?.includes("404")) return c.redirect("/personas");
   }
 
-  unlinkUserPersona(personaId);
+  unlinkUserPersona(user.id, personaId);
   return c.redirect("/personas");
 });
 

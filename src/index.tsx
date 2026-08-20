@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { serveStatic } from "hono/bun";
+import { serveStatic, websocket } from "hono/bun";
 import { csrf } from "hono/csrf";
 import { rateLimiter } from "hono-rate-limiter";
 import { initDB, seedAdmin } from "./db";
@@ -18,8 +18,10 @@ import affiliateLinkRoutes from "./routes/affiliate-link";
 import socialPostRoutes from "./routes/post";
 import settingsRoutes from "./routes/settings";
 import generateRoutes from "./routes/generate";
+import { rotateStoredSecrets } from "./lib/rotate-secrets";
 
 initDB();
+await rotateStoredSecrets();
 await seedAdmin();
 
 const app = new Hono();
@@ -42,7 +44,9 @@ app.use(
     windowMs: 15 * 60 * 1000,
     limit: 5,
     keyGenerator: (c) => {
-      const ip = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ip = process.env.TRUST_PROXY === "true"
+        ? (c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown")
+        : "direct";
       return `login_${ip}`;
     },
     handler: (c) => {
@@ -53,7 +57,25 @@ app.use(
   })
 );
 
+app.use(
+  "/login/verify-otp",
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    keyGenerator: (c) => {
+      const ip = process.env.TRUST_PROXY === "true"
+        ? (c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown")
+        : "direct";
+      return `otp_${ip}`;
+    },
+    handler: (c) => c.text("Terlalu banyak percobaan OTP. Coba lagi dalam 15 menit.", 429),
+  })
+);
+
 app.use("/css/*", serveStatic({ root: "./public" }));
+app.use("/images/*", serveStatic({ root: "./public" }));
+app.get("/favicon.ico", serveStatic({ path: "./public/favicon.ico" }));
+app.get("/site.webmanifest", serveStatic({ path: "./public/site.webmanifest" }));
 
 app.route("/", authRoutes);
 app.route("/", dashboardRoutes);
@@ -74,4 +96,5 @@ app.get("/", (c) => c.redirect("/login"));
 export default {
   port: Number(process.env.PORT) || 4000,
   fetch: app.fetch,
+  websocket,
 };

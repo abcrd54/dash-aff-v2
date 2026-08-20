@@ -54,40 +54,24 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
   const links = user.role === "admin" ? adminLinks : userLinks(autoPostActive, autoGenerateActive);
 
   return (
-    <div x-data="sidebarState" x-on:close-mobile="closeOnMobile()">
+    <div id="sidebar-root">
       <div
-        x-show="sidebarOpen"
-        x-transition:enter="transition-opacity ease-out duration-200"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition-opacity ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
-        x-cloak
-        x-on:click="sidebarOpen = false"
+        id="sidebar-overlay"
+        class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden transition-opacity duration-200"
       />
 
       <aside
-        x-show="sidebarOpen"
-        x-transition:enter="transition-transform ease-out duration-200"
-        x-transition:enter-start="-translate-x-full"
-        x-transition:enter-end="translate-x-0"
-        x-transition:leave="transition-transform ease-in duration-200"
-        x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="-translate-x-full"
-        class="fixed left-0 top-0 h-screen w-[260px] bg-sidebar-bg flex flex-col z-50 lg:translate-x-0"
-        x-cloak
+        id="app-sidebar"
+        class="fixed left-0 top-0 h-screen w-[260px] bg-sidebar-bg flex flex-col z-50 -translate-x-full transition-transform duration-200 lg:translate-x-0"
       >
         <div class="flex items-center justify-between px-5 h-16 border-b border-slate-700/50">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-sm">
-              BA
-            </div>
+            <img src="/images/logo.png" alt="Logo" class="w-9 h-9 object-contain flex-shrink-0" />
             <span class="text-white font-semibold text-base">Dashboard Management Affiliate</span>
           </div>
           <button
-            x-on:click="sidebarOpen = false"
+            type="button"
+            data-sidebar-close
             class="lg:hidden text-slate-400 hover:text-white cursor-pointer"
           >
             <i data-lucide="x" class="w-5 h-5" />
@@ -101,22 +85,28 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
               const childActive = link.children.some(c => currentPath.startsWith(c.href));
               const expanded = isParentActive || childActive;
               return (
-                <div x-data={`({ open: ${expanded} })`} x-init="$watch('open', () => setTimeout(() => lucide.createIcons(), 50))">
+                <div data-sidebar-group>
                   <button
-                    x-on:click="open = !open"
+                    type="button"
+                    data-sidebar-group-toggle
+                    aria-expanded={expanded ? "true" : "false"}
                     class={`sidebar-link w-full text-left ${isParentActive ? "active" : ""}`}
                   >
                     <i data-lucide={link.icon} class="w-5 h-5 flex-shrink-0" />
                     <span class="flex-1">{link.label}</span>
-                    <i data-lucide="chevron-right" x-show="!open" class="w-4 h-4 flex-shrink-0 transition-transform" />
-                    <i data-lucide="chevron-down" x-show="open" class="w-4 h-4 flex-shrink-0" />
+                    <span data-sidebar-collapsed-icon class={`flex-shrink-0 flex ${expanded ? "hidden" : ""}`}>
+                      <i data-lucide="chevron-right" class="w-4 h-4" />
+                    </span>
+                    <span data-sidebar-expanded-icon class={`flex-shrink-0 flex ${expanded ? "" : "hidden"}`}>
+                      <i data-lucide="chevron-down" class="w-4 h-4" />
+                    </span>
                   </button>
-                  <div x-show="open" class="ml-4 space-y-1 mt-1">
+                  <div data-sidebar-submenu class={`ml-4 space-y-1 mt-1 ${expanded ? "" : "hidden"}`}>
                     {link.children.map((child) => (
                       <a
                         href={child.href}
                         class={`sidebar-link text-sm ${currentPath === child.href || currentPath.startsWith(child.href) ? "active" : ""}`}
-                        x-on:click="$dispatch('close-mobile')"
+                        data-sidebar-close-mobile
                       >
                         <i data-lucide={child.icon} class="w-4 h-4 flex-shrink-0" />
                         <span>{child.label}</span>
@@ -130,7 +120,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
               <a
                 href={link.href}
                 class={`sidebar-link ${currentPath === link.href || (link.href !== "/dashboard" && currentPath.startsWith(link.href)) ? "active" : ""}`}
-                x-on:click="closeOnMobile()"
+                data-sidebar-close-mobile
               >
                 <i data-lucide={link.icon} class="w-5 h-5 flex-shrink-0" />
                 <span class="flex-1">{link.label}</span>
@@ -156,27 +146,40 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
       </aside>
 
       <script>{raw(`
-        document.addEventListener('alpine:init', function() {
-          Alpine.data('sidebarState', function() {
-            return {
-              sidebarOpen: window.innerWidth >= 1024,
-              closeOnMobile() {
-                if (window.innerWidth < 1024) this.sidebarOpen = false;
-              },
-              init() {
-                var self = this;
-                window.addEventListener('resize', function() {
-                  if (window.innerWidth >= 1024) self.sidebarOpen = true;
-                });
-                window.addEventListener('toggle-sidebar', function() {
-                  self.sidebarOpen = !self.sidebarOpen;
-                });
-                // Re-render lucide icons when sidebar opens
-                this.$watch('sidebarOpen', function() {
-                  setTimeout(function() { lucide.createIcons(); }, 50);
-                });
-              }
-            };
+        document.addEventListener('DOMContentLoaded', function() {
+          var sidebar = document.getElementById('app-sidebar');
+          var overlay = document.getElementById('sidebar-overlay');
+          var isOpen = false;
+
+          function setSidebarOpen(open) {
+            isOpen = open;
+            sidebar.classList.toggle('-translate-x-full', !open);
+            sidebar.classList.toggle('translate-x-0', open);
+            overlay.classList.toggle('hidden', !open);
+          }
+
+          window.addEventListener('toggle-sidebar', function() {
+            setSidebarOpen(!isOpen);
+          });
+          overlay.addEventListener('click', function() { setSidebarOpen(false); });
+          document.querySelectorAll('[data-sidebar-close]').forEach(function(button) {
+            button.addEventListener('click', function() { setSidebarOpen(false); });
+          });
+          document.querySelectorAll('[data-sidebar-close-mobile]').forEach(function(link) {
+            link.addEventListener('click', function() {
+              if (window.innerWidth < 1024) setSidebarOpen(false);
+            });
+          });
+          document.querySelectorAll('[data-sidebar-group-toggle]').forEach(function(button) {
+            button.addEventListener('click', function() {
+              var group = button.closest('[data-sidebar-group]');
+              var submenu = group.querySelector('[data-sidebar-submenu]');
+              var expanded = button.getAttribute('aria-expanded') !== 'true';
+              button.setAttribute('aria-expanded', String(expanded));
+              submenu.classList.toggle('hidden', !expanded);
+              group.querySelector('[data-sidebar-collapsed-icon]').classList.toggle('hidden', expanded);
+              group.querySelector('[data-sidebar-expanded-icon]').classList.toggle('hidden', !expanded);
+            });
           });
         });
       `)}</script>

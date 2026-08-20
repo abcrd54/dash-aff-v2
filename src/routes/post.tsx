@@ -133,12 +133,13 @@ postRoutes.post("/api/post/generate-caption", authMiddleware, (c) => {
 });
 
 postRoutes.delete("/api/post/:id", authMiddleware, (c) => {
+  const user = getSession(c)!;
   const id = Number(c.req.param("id"));
   if (!id || isNaN(id)) {
     return c.json({ success: false, error: "ID tidak valid" }, 400);
   }
 
-  const ok = deleteSocialPost(id);
+  const ok = deleteSocialPost(id, user.id);
   if (!ok) {
     return c.json({ success: false, error: "Post tidak ditemukan" }, 404);
   }
@@ -226,8 +227,6 @@ postRoutes.post("/api/post/send/stream", authMiddleware, async (c) => {
 postRoutes.get("/post-logs", authMiddleware, (c) => {
   const user = getSession(c)!;
   const logs = getPostLogs(user.id);
-  const autoPostActive = hasAnyAutoPostEnabled(user.id);
-  const autoGenerateActive = hasAnyAutoGenerateEnabled(user.id);
   return c.html(
     <PostLogsPage user={user} logs={logs} />
   );

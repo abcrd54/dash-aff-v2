@@ -23,7 +23,7 @@ export async function securityHeaders(c: Context, next: Next) {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' ws: wss:",
+      "connect-src 'self' ws: wss: https://unpkg.com https://cdn.jsdelivr.net",
       "frame-ancestors 'none'",
     ].join("; ")
   );

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('admin', 'user')),
   two_factor_enabled INTEGER NOT NULL DEFAULT 0,
+  session_version INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -119,6 +120,7 @@ CREATE TABLE IF NOT EXISTS group_auto_post_config (
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   identity TEXT NOT NULL,
   niche TEXT NOT NULL DEFAULT '',
+  is_persona INTEGER NOT NULL DEFAULT 0,
   auto_post_enabled INTEGER NOT NULL DEFAULT 0,
   auto_generate_enabled INTEGER NOT NULL DEFAULT 0,
   daily_post_count INTEGER NOT NULL DEFAULT 5,
@@ -144,3 +146,15 @@ CREATE TABLE IF NOT EXISTS post_logs (
 
 CREATE INDEX IF NOT EXISTS idx_post_logs_user ON post_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_post_logs_group ON post_logs(group_name);
+
+CREATE TABLE IF NOT EXISTS security_audit_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  event TEXT NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  metadata TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_security_audit_user ON security_audit_logs(user_id, created_at);

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware, adminMiddleware, getSession } from "../../middleware/auth";
-import { getAllUsers, createUser, updateUser, deleteUser, getUserByUsername, getUserByEmail, getUserById } from "../../lib/db";
+import { getAllUsers, createUser, updateUser, deleteUser, getUserByUsername, getUserByEmail, getUserById, revokeUserSessions, addSecurityAuditLog } from "../../lib/db";
 import { createUserSchema, updateUserSchema } from "../../lib/validate";
 import UsersPage from "../../views/admin/users";
 
@@ -24,29 +24,29 @@ adminUserRoutes.post("/admin/users", authMiddleware, adminMiddleware, async (c) 
   });
 
   if (!result.success) {
-    return c.redirect("/admin/users?error=" + encodeURIComponent(result.error.issues.map(i => i.message).join(", ")));
+    return c.json({ error: result.error.issues.map(i => i.message).join(", ") });
   }
 
   const { username, email, password, role } = result.data;
 
   const existing = getUserByUsername(username);
   if (existing) {
-    return c.redirect("/admin/users?error=" + encodeURIComponent("Username sudah digunakan"));
+    return c.json({ error: "Username sudah digunakan" });
   }
 
   const existingEmail = getUserByEmail(email);
   if (existingEmail) {
-    return c.redirect("/admin/users?error=" + encodeURIComponent("Email sudah digunakan"));
+    return c.json({ error: "Email sudah digunakan" });
   }
 
   try {
     const passwordHash = await Bun.password.hash(password, "bcrypt");
     createUser(username, email, passwordHash, role as "admin" | "user");
   } catch (e) {
-    return c.redirect("/admin/users?error=" + encodeURIComponent("Gagal membuat user"));
+    return c.json({ error: "Gagal membuat user" });
   }
 
-  return c.redirect("/admin/users?success=" + encodeURIComponent("User berhasil dibuat"));
+  return c.json({ success: true });
 });
 
 adminUserRoutes.put("/admin/users/:id", authMiddleware, adminMiddleware, async (c) => {
@@ -86,6 +86,8 @@ adminUserRoutes.put("/admin/users/:id", authMiddleware, adminMiddleware, async (
   if (twoFactorValue !== undefined) data.two_factor_enabled = twoFactorValue;
 
   updateUser(id, data);
+  if (result.data.password || result.data.role) revokeUserSessions(id);
+  addSecurityAuditLog({ user_id: currentUser.id, event: "admin.user_updated", user_agent: c.req.header("user-agent"), metadata: { target_user_id: id } });
 
   return c.redirect("/admin/users?success=" + encodeURIComponent("User berhasil diupdate"));
 });
@@ -99,6 +101,7 @@ adminUserRoutes.delete("/admin/users/:id", authMiddleware, adminMiddleware, (c) 
   }
 
   deleteUser(id);
+  addSecurityAuditLog({ user_id: currentUser.id, event: "admin.user_deleted", user_agent: c.req.header("user-agent"), metadata: { target_user_id: id } });
   
   return c.redirect("/admin/users?success=" + encodeURIComponent("User berhasil dihapus"));
 });

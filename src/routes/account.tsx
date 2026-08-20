@@ -1,11 +1,23 @@
 import { Hono } from "hono";
+import { setCookie } from "hono/cookie";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { updateUser, getUserByUsername, ensureJadiapaConfig } from "../lib/db";
+import { updateUser, getUserByUsername, getUserById, ensureJadiapaConfig, revokeUserSessions, addSecurityAuditLog } from "../lib/db";
+import { createSessionCookie } from "../middleware/auth";
 import { changePasswordSchema, setEmailSchema, changeUsernameSchema } from "../lib/validate";
 import AccountPage from "../views/account/index";
 import ManageAccountPage from "../views/account/manage";
 
 const accountRoutes = new Hono();
+
+async function refreshCurrentSession(c: any, userId: number) {
+  const user = getUserById(userId)!;
+  setCookie(c, "session", await createSessionCookie({
+    id: user.id, username: user.username, role: user.role, email: user.email,
+    session_version: user.session_version,
+  }), {
+    httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "Strict", path: "/", maxAge: 86400,
+  });
+}
 
 accountRoutes.get("/account", authMiddleware, (c) => {
   const user = getSession(c)!;
@@ -54,6 +66,9 @@ accountRoutes.post("/account/password", authMiddleware, async (c) => {
 
   const newHash = await Bun.password.hash(new_password, "bcrypt");
   updateUser(sessionUser.id, { password_hash: newHash });
+  revokeUserSessions(sessionUser.id);
+  await refreshCurrentSession(c, sessionUser.id);
+  addSecurityAuditLog({ user_id: sessionUser.id, event: "account.password_changed", user_agent: c.req.header("user-agent") });
 
   return c.redirect("/account?success=" + encodeURIComponent("Password berhasil diubah!"));
 });
@@ -68,6 +83,9 @@ accountRoutes.post("/account/email", authMiddleware, async (c) => {
   }
 
   updateUser(sessionUser.id, { email: result.data.email });
+  revokeUserSessions(sessionUser.id);
+  await refreshCurrentSession(c, sessionUser.id);
+  addSecurityAuditLog({ user_id: sessionUser.id, event: "account.email_changed", user_agent: c.req.header("user-agent") });
 
   return c.redirect("/account?success=" + encodeURIComponent("Email berhasil diatur!"));
 });
@@ -82,6 +100,9 @@ accountRoutes.post("/account/two-factor", authMiddleware, async (c) => {
 
   const newValue = fullUser.two_factor_enabled === 1 ? 0 : 1;
   updateUser(sessionUser.id, { two_factor_enabled: newValue });
+  revokeUserSessions(sessionUser.id);
+  await refreshCurrentSession(c, sessionUser.id);
+  addSecurityAuditLog({ user_id: sessionUser.id, event: "account.two_factor_changed", user_agent: c.req.header("user-agent"), metadata: { enabled: newValue === 1 } });
 
   const status = newValue === 1 ? "diaktifkan" : "dinonaktifkan";
   return c.redirect("/account?success=" + encodeURIComponent(`2FA ${status}.`));

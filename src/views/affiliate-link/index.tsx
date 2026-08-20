@@ -296,9 +296,9 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
                     if (emptyRow) emptyRow.closest('tr').remove();
                     var img = data.data.images ? (function() { try { var imgs = JSON.parse(data.data.images); return imgs[0] || ''; } catch(e) { return ''; } })() : '';
                     var row = document.createElement('tr');
-                    row.innerHTML = '<td data-label="Produk"><div class="font-medium text-slate-800">' + (data.data.name || '') + '</div><div class="text-xs text-slate-400 truncate max-w-[200px] lg:max-w-[400px]">' + (data.data.url || '') + '</div></td>' +
-                      '<td data-label="Gambar">' + (img ? '<img src="' + img + '" class="w-10 h-10 rounded object-cover" />' : '-') + '</td>' +
-                      '<td data-label="Harga">' + (data.data.price || '-') + '</td>' +
+                    row.innerHTML = '<td data-label="Produk"><div class="font-medium text-slate-800">' + esc(data.data.name || '') + '</div><div class="text-xs text-slate-400 truncate max-w-[200px] lg:max-w-[400px]">' + esc(data.data.url || '') + '</div></td>' +
+                      '<td data-label="Gambar">' + (img ? '<img src="' + esc(img) + '" class="w-10 h-10 rounded object-cover" />' : '-') + '</td>' +
+                      '<td data-label="Harga">' + esc(data.data.price || '-') + '</td>' +
                       '<td data-label="Views">' + (data.data.views || 0) + '</td>' +
                       '<td data-label="Klik">' + (data.data.clicks || 0) + '</td>' +
                       '<td data-label="Aksi"><button data-delete-id="' + data.data.id + '" class="delete-product-btn text-xs text-red-600 hover:text-red-800 cursor-pointer">Hapus</button></td>';
@@ -327,6 +327,10 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
                 .then(function() { location.reload(); });
             });
           });
+
+          function esc(value) {
+            return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+          }
         })();
       `)}</script>
     </Layout>

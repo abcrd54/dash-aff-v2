@@ -11,6 +11,11 @@ const VerifyOtpPage: FC<VerifyOtpProps> = ({ error }) => {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
+        <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#2563eb" />
         <title>Verifikasi OTP — Dashboard Management Affiliate</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
@@ -29,11 +34,7 @@ const VerifyOtpPage: FC<VerifyOtpProps> = ({ error }) => {
         <div class="w-full max-w-md">
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div class="text-center mb-8">
-              <div class="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
+              <img src="/images/logo.png" alt="Dashboard Management Affiliate" class="w-16 h-16 object-contain mx-auto mb-4" />
               <h1 class="text-2xl font-bold text-slate-900">Verifikasi OTP</h1>
               <p class="text-slate-500 text-sm mt-1">Kode 6 digit telah dikirim ke email Anda</p>
             </div>

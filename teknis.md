@@ -329,7 +329,6 @@ src/
 │   ├── encrypt.ts                        # AES-256-GCM encryption
 │   ├── validate.ts                       # Zod schemas
 │   ├── email.ts                          # Resend OTP sender
-│   ├── puppeteer.ts                      # hanya dipakai jika perlu
 │   ├── news-caption.ts                   # 🔜
 │   ├── jadiapa-generate.ts               # 🔜
 │   ├── auto-post.ts                      # 🔜

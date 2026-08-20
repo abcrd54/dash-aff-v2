@@ -15,6 +15,11 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
+        <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#2563eb" />
         <title>Login — Dashboard Management Affiliate</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
@@ -33,9 +38,7 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
         <div class="w-full max-w-md">
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div class="text-center mb-8">
-              <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <span class="text-white font-bold text-xl">BA</span>
-              </div>
+              <img src="/images/logo.png" alt="Dashboard Management Affiliate" class="w-16 h-16 object-contain mx-auto mb-4" />
               <h1 class="text-2xl font-bold text-slate-900">Dashboard Management Affiliate</h1>
               <p class="text-slate-500 text-sm mt-1">Silakan login untuk melanjutkan</p>
             </div>
@@ -57,7 +60,14 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
               </div>
             )}
 
-            <form method="POST" action="/login" class="space-y-5">
+            <div id="setEmailNotice" class="hidden mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <p class="text-sm text-amber-800 font-medium">Email Belum Diatur</p>
+              <p class="text-xs text-amber-700 mt-1">
+                Akun <strong id="setEmailUsername"></strong> belum memiliki email. Email diperlukan untuk 2FA OTP.
+              </p>
+            </div>
+
+            <form id="loginForm" method="POST" action="/login" class="space-y-5">
               <div>
                 <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">
                   Email
@@ -108,6 +118,44 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
             </form>
           </div>
         </div>
+        <script>{raw(`
+          document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var btn = this.querySelector('button[type="submit"]');
+            var original = btn.textContent;
+            btn.textContent = 'Memproses...';
+            btn.disabled = true;
+
+            fetch('/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+              })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              btn.textContent = original;
+              btn.disabled = false;
+              if (data.redirect) {
+                window.location.href = data.redirect;
+              } else if (data.setEmail) {
+                var n = document.getElementById('setEmailNotice');
+                document.getElementById('setEmailUsername').textContent = data.username;
+                n.classList.remove('hidden');
+                Swal.fire({ icon: 'warning', title: 'Email Belum Diatur', text: 'Email diperlukan untuk 2FA OTP.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true });
+              } else if (data.error) {
+                Swal.fire({ icon: 'error', title: 'Login Gagal', text: data.error, toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true });
+              }
+            })
+            .catch(function() {
+              btn.textContent = original;
+              btn.disabled = false;
+              Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Terjadi kesalahan. Coba lagi.', toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true });
+            });
+          });
+        `)}</script>
       </body>
     </html>
   );

@@ -30,12 +30,3 @@ export const PLACEMENT_CONFIG: Record<string, { label: string; platforms: string
   caption: { label: "Di Caption", platforms: ["X", "TikTok", "Threads", "Pinterest"] },
   both: { label: "Keduanya", platforms: ["Semua platform"] },
 };
-
-export const PLATFORM_PRIME_TIME: Record<string, { best: string; days: string }> = {
-  FACEBOOK: { best: "12:00 - 20:00", days: "Selasa, Rabu" },
-  INSTAGRAM: { best: "12:00 - 21:00", days: "Selasa, Rabu" },
-  TWITTER: { best: "12:00 - 18:00", days: "Selasa - Kamis" },
-  TIKTOK: { best: "13:00 - 20:00", days: "Rabu, Kamis" },
-  THREADS: { best: "12:00 - 18:00", days: "Selasa - Kamis" },
-  PINTEREST: { best: "10:00 - 13:00", days: "Selasa - Kamis" },
-};

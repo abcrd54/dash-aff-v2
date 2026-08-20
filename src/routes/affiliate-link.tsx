@@ -73,12 +73,13 @@ affiliateLinkRoutes.post("/api/affiliate-link/add", authMiddleware, async (c) =>
 });
 
 affiliateLinkRoutes.delete("/api/affiliate-link/:id", authMiddleware, (c) => {
+  const user = getSession(c)!;
   const id = Number(c.req.param("id"));
   if (!id || isNaN(id)) {
     return c.json({ success: false, error: "ID tidak valid" }, 400);
   }
 
-  const ok = deleteAffiliateProduct(id);
+  const ok = deleteAffiliateProduct(id, user.id);
   if (!ok) {
     return c.json({ success: false, error: "Produk tidak ditemukan" }, 404);
   }

@@ -3,21 +3,32 @@ import { authMiddleware, getSession } from "../middleware/auth";
 import { runBatchOnboarding } from "../lib/orchestrator";
 import { getAffiliateAccounts } from "../lib/db";
 import CreateBunsosPage from "../views/affiliate/index";
-import { raw } from "hono/html";
 
 const activeJobs = new Map<number, AbortController>();
 
 const affiliateRoutes = new Hono();
 
+function publicAccount(account: ReturnType<typeof getAffiliateAccounts>[number]) {
+  const { password, password_hash, access_token, api_key, api_key_id, ...safe } = account;
+  return {
+    ...safe,
+    password: null,
+    password_hash: "",
+    access_token: null,
+    api_key: null,
+    api_key_id: null,
+  };
+}
+
 affiliateRoutes.get("/create-bunsos", authMiddleware, (c) => {
   const user = getSession(c)!;
-  const accounts = getAffiliateAccounts(user.id);
+  const accounts = getAffiliateAccounts(user.id).map(publicAccount);
   return c.html(<CreateBunsosPage user={user} accounts={accounts} />);
 });
 
 affiliateRoutes.get("/api/affiliate/accounts", authMiddleware, (c) => {
   const user = getSession(c)!;
-  const accounts = getAffiliateAccounts(user.id);
+  const accounts = getAffiliateAccounts(user.id).map(publicAccount);
   return c.json({ accounts, hasActiveJob: activeJobs.has(user.id) });
 });
 
@@ -46,8 +57,10 @@ affiliateRoutes.post("/create-bunsos/stream", authMiddleware, async (c) => {
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({ accountIndex: 0, accountName: "System", step: "error", status: "failed", detail: e.message })}\n\n`)
         );
+      } finally {
+        activeJobs.delete(user.id);
+        controller.close();
       }
-      controller.close();
     },
     cancel() {
       abortController.abort();

@@ -8,11 +8,8 @@
     "start": "bun run build:css && bun run src/index.tsx"
   },
   "dependencies": {
-    "better-auth": "^1.7.0",
     "hono": "^4.6.14",
     "hono-rate-limiter": "^0.5.3",
-    "kysely": "^0.29.5",
-    "puppeteer": "^24.0.0",
     "resend": "^6.20.0",
     "tailwindcss": "3",
     "zod": "^4.4.3"

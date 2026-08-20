@@ -79,6 +79,9 @@ Services:
 | `ENCRYPTION_KEY` | — | AES-256-GCM encryption key (32 chars) |
 | `ADMIN_EMAIL` | `admin@localhost` | Default admin email on seed |
 | `ADMIN_INITIAL_PASSWORD` | — | Default admin password on seed |
+| `ENCRYPTION_KEY_VERSION` | `v1` | Active credential-encryption key version |
+| `ENCRYPTION_KEYS` | — | JSON keyring used during zero-downtime key rotation |
+| `TRUST_PROXY` | `false` | Trust forwarded client IP headers only behind a controlled proxy |
 | `NODE_ENV` | — | Set to `production` for secure cookies |
 | `DB_PATH` | `data/dam.db` | SQLite database path |
 | `KUMAIL_URL` | `http://localhost:3010` | Kumux Mail service URL |

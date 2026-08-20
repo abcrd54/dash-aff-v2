@@ -1,6 +1,7 @@
 node_modules/
 data/
 dist/
+out/
 public/css/main.css
 *.log
 .env

@@ -1,6 +1,7 @@
 import { generateMailbox, checkMessages, getMessageDetail } from "./kumail";
 import { signup, getToken, getUserMe, setupProfile, createApiKey, createTeam } from "./bunsocial";
 import { createAffiliateAccount, updateAffiliateAccount } from "./db";
+import { encrypt } from "./encrypt";
 
 interface OnboardingData {
   user_id: number;
@@ -113,6 +114,7 @@ async function* runSingleOnboarding(
       user_id: data.user_id,
       name: email,
       email,
+      password: await encrypt(data.password),
       password_hash: passwordHash,
       first_name: data.first_name,
       last_name: data.last_name,
@@ -173,7 +175,7 @@ async function* runSingleOnboarding(
     const accessToken = tokenRes.data.accessToken;
     checkAbort();
     yield emit("get_token", "done", "Access token obtained");
-    updateAffiliateAccount(accountId, { access_token: accessToken, status: "token_obtained" });
+    updateAffiliateAccount(accountId, { access_token: await encrypt(accessToken), status: "token_obtained" });
 
     checkAbort();
     yield emit("setup_profile", "running", "Setting up profile...");
@@ -199,9 +201,9 @@ async function* runSingleOnboarding(
     yield emit("create_api_key", "running", "Creating API key...");
     const keyRes = await createApiKey(accessToken, orgId, data.name);
     checkAbort();
-    yield emit("create_api_key", "done", keyRes.data.key);
+    yield emit("create_api_key", "done", "API key created");
     updateAffiliateAccount(accountId, {
-      api_key: keyRes.data.key,
+      api_key: await encrypt(keyRes.data.key),
       api_key_id: keyRes.data.id,
       status: "api_key_created",
     });

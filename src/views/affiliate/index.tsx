@@ -173,31 +173,35 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
             html += '<div class="flex items-center justify-between">';
             html += '<div class="flex items-center gap-2 min-w-0">';
             html += '<span class="shrink-0 ' + iconColor + '">' + icon + '</span>';
-            html += '<span class="text-sm font-medium text-slate-700 truncate">' + (acc.email || acc.name) + '</span>';
+            html += '<span class="text-sm font-medium text-slate-700 truncate">' + esc(acc.email || acc.name) + '</span>';
             if (acc.identity) {
-              html += '<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600 font-medium shrink-0">' + acc.identity + '</span>';
+              html += '<span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600 font-medium shrink-0">' + esc(acc.identity) + '</span>';
             }
             html += '</div>';
             html += '<span class="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ' + badgeClass + '">' + badgeText + '</span>';
             html += '</div>';
             if (acc.password && acc.status === 'done') {
-              html += '<div class="mt-1 text-xs text-slate-500 truncate font-mono">Pass: ' + acc.password + '</div>';
+              html += '<div class="mt-1 text-xs text-slate-500 truncate font-mono">Pass: ' + esc(acc.password) + '</div>';
             }
             if (acc.api_key && acc.status === 'done') {
               html += '<div class="mt-2 flex flex-wrap gap-1 text-[10px]">';
-              html += '<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Key: ' + acc.api_key.substring(0, 12) + '...</span>';
+              html += '<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Key: ' + esc(acc.api_key.substring(0, 12)) + '...</span>';
               if (acc.team_id) {
-                html += '<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Team: ' + acc.team_id.substring(0, 8) + '...</span>';
+                html += '<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Team: ' + esc(acc.team_id.substring(0, 8)) + '...</span>';
               }
               html += '</div>';
             }
             if (acc.error) {
-              html += '<div class="mt-2 text-[10px] text-red-500 truncate">' + acc.error + '</div>';
+              html += '<div class="mt-2 text-[10px] text-red-500 truncate">' + esc(acc.error) + '</div>';
             }
             html += '</div>';
           });
           html += '</div>';
           container.innerHTML = html;
+        }
+
+        function esc(value) {
+          return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function refreshAccounts() {

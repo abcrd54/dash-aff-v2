@@ -19,13 +19,18 @@ const Layout: FC<LayoutProps> = ({ user, title, currentPath, children, autoPostA
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16.png" />
+        <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#2563eb" />
         <title>{title} — Dashboard Management Affiliate</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="/css/main.css" />
         <script src="https://unpkg.com/htmx.org@1.9.12" />
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" />
         <script src="https://unpkg.com/lucide@latest" />
         <script>{raw(`

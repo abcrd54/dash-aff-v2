@@ -13,10 +13,6 @@ body {
   background-color: #f1f5f9;
 }
 
-[x-cloak] {
-  display: none !important;
-}
-
 .htmx-indicator {
   display: none;
 }
