@@ -34,4 +34,6 @@ services:
     image: ghcr.io/abcrd54/personal-aff-v2:latest
     ports:
       - "3000:3000"
+    environment:
+      - API_KEY=${PERSONA_SERVICE_API_KEY:?PERSONA_SERVICE_API_KEY must be set}
     restart: unless-stopped
