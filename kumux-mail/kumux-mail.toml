@@ -5,7 +5,7 @@ cors_allowed_origins = []
 enable_docs = false
 
 [auth]
-api_keys = ["jn9cPQyK3z7Gym7uYdLhxYsyzJErncyB0nHrBUyoUo"]
+api_keys = []
 bearer_tokens = []
 auth_failure_rate_limit_rpm = 30
 

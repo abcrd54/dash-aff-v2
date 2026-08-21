@@ -1,6 +1,6 @@
 export function getKumailConfig() {
   return {
-    base_url: process.env.KUMAIL_URL || "http://localhost:3000",
+    base_url: process.env.KUMAIL_URL || "http://localhost:3010",
     api_key: process.env.KUMAIL_API_KEY || "dev-key",
   };
 }

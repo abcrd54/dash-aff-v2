@@ -22,35 +22,16 @@ services:
     ports:
       - "3010:3010"
     volumes:
-      - ./kumux-mail/kumux-mail.toml:/app/kumux-mail.toml:ro
+      - ./kumux-mail/kumux-mail.toml:/config/kumux-mail.toml:ro
+    environment:
+      - KUMUX_CONFIG=/config/kumux-mail.toml
+      - KUMUX__SERVER__BIND_ADDR=0.0.0.0:3010
+      - KUMUX__AUTH__API_KEYS=${KUMAIL_API_KEY:?KUMAIL_API_KEY must be set}
+      - RUST_LOG=${RUST_LOG:-info}
     restart: unless-stopped
 
   aff-personal:
     image: ghcr.io/abcrd54/personal-aff-v2:latest
     ports:
       - "3000:3000"
-    restart: unless-stopped
-
-  shopee-product-scraper:
-    build: ./scrapers/shopee-product
-    ports:
-      - "3100:3100"
-    restart: unless-stopped
-
-  shopee-affiliate-scraper:
-    build: ./scrapers/shopee-affiliate
-    ports:
-      - "3101:3101"
-    restart: unless-stopped
-
-  news-scraper:
-    build: ./scrapers/news
-    ports:
-      - "3102:3102"
-    restart: unless-stopped
-
-  jadiapa-scraper:
-    build: ./scrapers/jadiapa
-    ports:
-      - "3103:3103"
     restart: unless-stopped
