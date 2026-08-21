@@ -51,15 +51,20 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
             </div>
           </div>
 
-          {/* Log Box */}
+          {/* Progress */}
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-semibold text-slate-700">Live Log</h3>
-              <button onclick="clearLogs()" class="text-xs text-slate-400 hover:text-slate-600 cursor-pointer">Clear</button>
+              <h3 class="text-sm font-semibold text-slate-700">Progress</h3>
+              <span id="progressPercent" class="text-2xl font-bold text-blue-600">0%</span>
             </div>
-            <div id="logs" class="bg-slate-950 rounded-lg p-4 max-h-[500px] overflow-y-auto font-mono text-xs space-y-1 min-h-[200px]">
-              <div class="text-slate-500 text-xs">Log akan muncul di sini saat proses berjalan...</div>
+            <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
+              <div id="progressBar" class="h-full w-0 rounded-full bg-blue-600 transition-all duration-300"></div>
             </div>
+            <div class="flex items-center justify-between gap-4 mt-3 text-xs">
+              <span id="progressStatus" class="text-slate-500">Siap memulai</span>
+              <span id="progressAccount" class="text-slate-400 truncate"></span>
+            </div>
+            <div id="progressError" class="hidden mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600"></div>
           </div>
         </div>
 
@@ -144,9 +149,12 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
       </div>
 
       <script>{raw(`
-        function clearLogs() {
-          var logs = document.getElementById('logs');
-          logs.innerHTML = '<div class="text-slate-500 text-xs">Log akan muncul di sini saat proses berjalan...</div>';
+        function updateProgress(percent, statusText, accountText) {
+          var bounded = Math.max(0, Math.min(100, Math.round(percent)));
+          document.getElementById('progressPercent').textContent = bounded + '%';
+          document.getElementById('progressBar').style.width = bounded + '%';
+          if (statusText) document.getElementById('progressStatus').textContent = statusText;
+          document.getElementById('progressAccount').textContent = accountText || '';
         }
 
         function renderAccountList(accounts) {
@@ -231,14 +239,42 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
 
         function startBatch() {
           var btn = document.getElementById('generateBtn');
-          var count = document.getElementById('countSelect').value;
-          var logs = document.getElementById('logs');
+          var count = Number(document.getElementById('countSelect').value);
+          var logs = document.createElement('div');
           var status = document.getElementById('jobStatus');
+          var errorBox = document.getElementById('progressError');
+          var stepOrder = ['generate_email', 'signup', 'poll_inbox', 'verify_link', 'get_token', 'setup_profile', 'get_org', 'create_api_key', 'create_team', 'complete'];
+          var accountProgress = {};
+          var hasError = false;
+
+          function renderBatchProgress(event) {
+            var current = accountProgress[event.accountIndex] || 0;
+            var stepIndex = stepOrder.indexOf(event.step);
+            if (event.step === 'error' || event.step === 'cancelled') {
+              current = stepOrder.length;
+              hasError = true;
+              errorBox.textContent = event.detail || 'Proses gagal';
+              errorBox.classList.remove('hidden');
+            } else if (stepIndex >= 0) {
+              current = Math.max(current, event.status === 'done' ? stepIndex + 1 : stepIndex);
+            }
+            accountProgress[event.accountIndex] = current;
+            var completed = Object.keys(accountProgress).reduce(function(sum, key) { return sum + accountProgress[key]; }, 0);
+            var labels = {
+              generate_email: 'Membuat email', signup: 'Mendaftarkan akun', poll_inbox: 'Menunggu email verifikasi',
+              verify_link: 'Memverifikasi email', get_token: 'Mengambil token', setup_profile: 'Menyiapkan profil',
+              get_org: 'Mengambil organisasi', create_api_key: 'Membuat API key', create_team: 'Membuat team',
+              complete: 'Akun selesai', error: 'Akun gagal', cancelled: 'Dibatalkan'
+            };
+            updateProgress((completed / (count * stepOrder.length)) * 100, labels[event.step] || 'Memproses', 'Akun ' + event.accountIndex + ' dari ' + count);
+          }
 
           btn.disabled = true;
           btn.textContent = 'Generating...';
           status.classList.remove('hidden');
-          logs.innerHTML = '';
+          errorBox.classList.add('hidden');
+          errorBox.textContent = '';
+          updateProgress(0, 'Memulai proses...', '0 dari ' + count);
 
           fetch('/create-bunsos/stream', {
             method: 'POST',
@@ -249,7 +285,8 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
               btn.disabled = false;
               btn.textContent = 'Generate';
               status.classList.add('hidden');
-              logs.innerHTML = '<div class="text-amber-400 text-xs">Proses sebelumnya masih berjalan. Tunggu hingga selesai.</div>';
+              errorBox.textContent = 'Proses sebelumnya masih berjalan. Tunggu hingga selesai.';
+              errorBox.classList.remove('hidden');
               return;
             }
 
@@ -264,7 +301,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                   btn.textContent = 'Generate';
                   status.classList.add('hidden');
                   refreshAccounts();
-                  logs.scrollTop = logs.scrollHeight;
+                  updateProgress(100, hasError ? 'Selesai dengan beberapa kegagalan' : 'Semua akun selesai', count + ' dari ' + count);
                   return;
                 }
                 buffer += decoder.decode(result.value, { stream: true });
@@ -276,6 +313,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                   var line = lines[i];
                   if (!line.startsWith('data: ')) continue;
                   var event = JSON.parse(line.slice(6));
+                  renderBatchProgress(event);
 
                   // Capture email from generate_email step
                   if (event.step === 'generate_email' && event.status === 'done' && event.detail) {
@@ -341,7 +379,10 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
             btn.disabled = false;
             btn.textContent = 'Generate';
             status.classList.add('hidden');
-            logs.innerHTML += '<div class="text-red-400">Error: ' + e.message + '</div>';
+            hasError = true;
+            errorBox.textContent = 'Error: ' + e.message;
+            errorBox.classList.remove('hidden');
+            document.getElementById('progressStatus').textContent = 'Proses gagal';
           });
         }
       `)}</script>
