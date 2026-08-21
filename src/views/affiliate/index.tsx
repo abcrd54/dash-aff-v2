@@ -15,15 +15,15 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
 
   return (
     <Layout user={user} title="Auto Create Bunsoc" currentPath="/create-bunsos">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Generate + Logs */}
-        <div class="lg:col-span-2 space-y-6">
+      <div class="space-y-6">
+        {/* Generate controls + progress */}
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
           {/* Controls */}
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <div class="flex items-end gap-4">
-              <div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-1">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Jumlah Akun</label>
-                <select id="countSelect" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="countSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
@@ -31,23 +31,25 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                   <option value="5">5</option>
                 </select>
               </div>
-              <div>
+              <div class="sm:col-span-1">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Identitas Akun</label>
                 <input
                   id="identityInput"
                   type="text"
                   placeholder="e.g. Furniture, Fashion"
-                  class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <button
-                id="generateBtn"
-                onclick="startBatch()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Generate
-              </button>
-              <span id="jobStatus" class="text-amber-500 text-xs hidden">Proses sedang berjalan...</span>
+              <div class="sm:col-span-2 flex items-center gap-3">
+                <button
+                  id="generateBtn"
+                  onclick="startBatch()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Generate
+                </button>
+                <span id="jobStatus" class="text-amber-500 text-xs hidden">Proses sedang berjalan...</span>
+              </div>
             </div>
           </div>
 
@@ -68,8 +70,8 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
           </div>
         </div>
 
-        {/* Right: Account List */}
-        <div class="space-y-4">
+        {/* Summary + account list */}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Summary Card */}
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-700 mb-4">Ringkasan Akun</h3>
@@ -86,7 +88,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
           </div>
 
           {/* Account List */}
-          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-700 mb-4">Daftar Akun</h3>
             <div id="accountList">
               {totalCount === 0 ? (
@@ -127,7 +129,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                         <div class="mt-2 flex flex-wrap gap-1 text-[10px]">
                           <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded flex items-center gap-1">
                             Key: {acc.api_key.substring(0, 12)}...
-                            <button onclick="navigator.clipboard.writeText('{acc.api_key}');this.textContent='✓' " class="text-blue-500 hover:text-blue-700 cursor-pointer">Copy</button>
+                            <button onclick="navigator.clipboard.writeText('{acc.api_key}');this.textContent='Copied'" class="text-blue-500 hover:text-blue-700 cursor-pointer">Copy</button>
                           </span>
                           {acc.team_id && (
                             <span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
