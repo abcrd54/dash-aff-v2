@@ -76,7 +76,7 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, personas, autoPostA
 
             {personaGroups.length === 0 ? (
               <div class="empty-state">
-                <div class="empty-state-icon">🧑‍💻</div>
+                <div class="empty-state-icon"><i class="fa-solid fa-user-gear"></i></div>
                 <p class="empty-state-text">Belum ada grup persona</p>
                 <p class="text-xs text-slate-400 mb-4">Label grup sebagai persona terlebih dahulu di panel kanan</p>
                 <a href="/create-bunsos" class="empty-state-action">Buat Akun Bunsoc</a>

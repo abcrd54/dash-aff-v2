@@ -114,7 +114,7 @@ const AffiliateLinkPage: FC<AffiliateLinkProps> = ({ user, products, groups, err
             <div class="overflow-x-auto">
               {products.length === 0 ? (
 <div class="empty-state">
-                  <div class="empty-state-icon">🔗</div>
+                  <div class="empty-state-icon"><i class="fa-solid fa-link"></i></div>
                   <p class="empty-state-text">Belum ada produk affiliate</p>
                   <p class="text-xs text-slate-400">Input URL Shopee/Tokopedia di atas untuk scrape & simpan produk</p>
                 </div>

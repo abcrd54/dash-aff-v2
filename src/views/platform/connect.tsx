@@ -49,7 +49,7 @@ const PlatformConnectPage: FC<PlatformConnectProps> = ({ user, accounts, platfor
       <div class="space-y-6">
         {accounts.length === 0 ? (
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm empty-state">
-            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-icon"><i class="fa-solid fa-inbox"></i></div>
             <p class="empty-state-text">Belum ada akun yang siap</p>
             <p class="text-xs text-slate-400 mb-4">Buat akun Bunsocial terlebih dahulu sebelum menghubungkan platform</p>
             <a href="/create-bunsos" class="empty-state-action">Buat Akun Bunsocial</a>
@@ -122,7 +122,7 @@ const PlatformConnectPage: FC<PlatformConnectProps> = ({ user, accounts, platfor
                                   {raw(PLATFORM_ICONS[platform] || info.label)}
                                   {isConnected && (
                                     <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white flex items-center justify-center text-[8px] shadow-sm">
-                                      {hasChannel ? "✅" : "⚠️"}
+                                      <i class={`fa-solid ${hasChannel ? "fa-circle-check" : "fa-triangle-exclamation"}`}></i>
                                     </span>
                                   )}
                                 </button>

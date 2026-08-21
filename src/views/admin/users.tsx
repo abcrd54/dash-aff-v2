@@ -81,7 +81,7 @@ const UsersPage: FC<UsersPageProps> = ({ user: currentUser, users }) => {
               {users.length === 0 && (
                 <tr>
                   <td colspan="7" class="empty-state">
-                    <div class="empty-state-icon">👥</div>
+                    <div class="empty-state-icon"><i class="fa-solid fa-users"></i></div>
                     <p class="empty-state-text">Belum ada user terdaftar</p>
                   </td>
                 </tr>

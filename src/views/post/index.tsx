@@ -60,7 +60,7 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold text-slate-800">Compose Post</h2>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">Auto Post 🔜</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700"><i class="fa-solid fa-clock mr-1"></i>Auto Post</span>
             </div>
             <form id="composeForm" class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
@@ -162,7 +162,7 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
             </div>
             {posts.length === 0 ? (
               <div class="empty-state">
-                <div class="empty-state-icon">📝</div>
+                <div class="empty-state-icon"><i class="fa-solid fa-file-pen"></i></div>
                 <p class="empty-state-text">Belum ada post. Compose di atas untuk membuat.</p>
               </div>
             ) : (

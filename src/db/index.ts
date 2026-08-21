@@ -139,7 +139,7 @@ export async function seedAdmin(): Promise<void> {
     .query("INSERT INTO users (username, password_hash, role, email) VALUES (?, ?, ?, ?)")
     .run("admin", passwordHash, "admin", adminEmail);
 
-  console.log("✅ Admin user seeded");
+  console.log("Admin user seeded");
   console.log("   Username: admin");
   console.log("   Email: " + adminEmail);
   console.log("   Password: " + password + " (change immediately!)");

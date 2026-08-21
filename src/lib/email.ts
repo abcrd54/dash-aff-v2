@@ -50,7 +50,7 @@ export async function sendOTP(
             </div>
             <p>Kode ini berlaku selama <strong>5 menit</strong>. Jangan bagikan kode ini kepada siapapun.</p>
             <div class="warning">
-              ⚠️ Jika Anda tidak merasa melakukan login ini, abaikan email ini dan segera ganti password Anda.
+              PERINGATAN: Jika Anda tidak merasa melakukan login ini, abaikan email ini dan segera ganti password Anda.
             </div>
             <div class="footer">
               <p>Dashboard Management Affiliate</p>

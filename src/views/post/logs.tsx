@@ -30,7 +30,7 @@ const PostLogsPage: FC<PostLogsProps> = ({ user, logs }) => {
 
         {logs.length === 0 ? (
           <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list"></i></div>
             <p class="empty-state-text">Belum ada riwayat post</p>
             <p class="text-xs text-slate-400 mb-4">Post pertama Anda akan muncul di sini setelah mengirim konten</p>
             <a href="/post" class="empty-state-action">Post Sekarang</a>

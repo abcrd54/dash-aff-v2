@@ -75,7 +75,7 @@ const PersonaListPage: FC<PersonaListProps> = ({ user, serviceName, personas, er
         </div>
         {personas.length === 0 ? (
           <div class="empty-state">
-            <div class="empty-state-icon">👤</div>
+            <div class="empty-state-icon"><i class="fa-solid fa-user"></i></div>
             <p class="empty-state-text">Belum ada persona. Buat persona AI untuk generate konten.</p>
           </div>
         ) : (

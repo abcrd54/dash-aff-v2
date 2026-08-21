@@ -91,7 +91,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
             <div id="accountList">
               {totalCount === 0 ? (
                 <div class="empty-state">
-                  <div class="empty-state-icon">📭</div>
+                  <div class="empty-state-icon"><i class="fa-solid fa-inbox"></i></div>
                   <p class="empty-state-text">Belum ada akun yang dibuat</p>
                   <p class="text-xs text-slate-400 mb-4">Generate akun Bunsocial otomatis dengan form di atas</p>
                 </div>
@@ -102,7 +102,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                       <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 min-w-0">
                           <span class={`shrink-0 ${acc.status === "done" ? "text-emerald-500" : acc.status === "failed" ? "text-red-400" : "text-amber-400"}`}>
-                            {acc.status === "done" ? "✅" : acc.status === "failed" ? "❌" : "⏳"}
+                            <i class={`fa-solid ${acc.status === "done" ? "fa-circle-check" : acc.status === "failed" ? "fa-circle-xmark" : "fa-spinner fa-spin"}`}></i>
                           </span>
                           <span class="text-sm font-medium text-slate-700 truncate">{acc.email}</span>
                           {acc.identity && (
@@ -157,6 +157,23 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
           document.getElementById('progressAccount').textContent = accountText || '';
         }
 
+        var progressPollTimer = null;
+        function applyServerJob(job) {
+          if (!job) return;
+          var labels = {
+            starting: 'Memulai proses', generate_email: 'Membuat email', signup: 'Mendaftarkan akun',
+            poll_inbox: 'Menunggu email verifikasi', verify_link: 'Memverifikasi email', get_token: 'Mengambil token',
+            setup_profile: 'Menyiapkan profil', get_org: 'Mengambil organisasi', create_api_key: 'Membuat API key',
+            create_team: 'Membuat team', complete: 'Semua akun selesai', error: 'Akun gagal', cancelled: 'Dibatalkan'
+          };
+          updateProgress(job.percent, job.error && !job.active ? 'Selesai dengan kegagalan' : labels[job.step] || 'Memproses', job.accountIndex + ' dari ' + job.count);
+          var errorBox = document.getElementById('progressError');
+          if (job.error) {
+            errorBox.textContent = job.error;
+            errorBox.classList.remove('hidden');
+          }
+        }
+
         function renderAccountList(accounts) {
           var container = document.getElementById('accountList');
           var doneCount = 0;
@@ -165,14 +182,14 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
           document.getElementById('doneCount').textContent = doneCount;
 
           if (accounts.length === 0) {
-            container.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm"><div class="text-3xl mb-2">📭</div>Belum ada akun yang dibuat</div>';
+            container.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm"><div class="text-3xl mb-2"><i class="fa-solid fa-inbox"></i></div>Belum ada akun yang dibuat</div>';
             return;
           }
 
           var html = '<div class="space-y-2 max-h-[500px] overflow-y-auto">';
           accounts.forEach(function(acc) {
             var borderClass = acc.status === 'done' ? 'border-emerald-200 bg-emerald-50/50' : acc.status === 'failed' ? 'border-red-200 bg-red-50/50' : 'border-slate-200 bg-slate-50';
-            var icon = acc.status === 'done' ? '✅' : acc.status === 'failed' ? '❌' : '⏳';
+            var icon = acc.status === 'done' ? '<i class="fa-solid fa-circle-check"></i>' : acc.status === 'failed' ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-solid fa-spinner fa-spin"></i>';
             var iconColor = acc.status === 'done' ? 'text-emerald-500' : acc.status === 'failed' ? 'text-red-400' : 'text-amber-400';
             var badgeClass = acc.status === 'done' ? 'bg-emerald-100 text-emerald-700' : acc.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
             var badgeText = acc.status === 'done' ? 'Siap' : acc.status === 'failed' ? 'Gagal' : 'Proses';
@@ -217,12 +234,15 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
             .then(function(r) { return r.json(); })
             .then(function(data) {
               renderAccountList(data.accounts);
+              applyServerJob(data.job);
               var btn = document.getElementById('generateBtn');
               var status = document.getElementById('jobStatus');
               if (data.hasActiveJob) {
                 btn.disabled = true;
                 btn.textContent = 'Generating...';
                 status.classList.remove('hidden');
+                clearTimeout(progressPollTimer);
+                progressPollTimer = setTimeout(refreshAccounts, 1000);
               } else {
                 btn.disabled = false;
                 btn.textContent = 'Generate';
@@ -319,7 +339,7 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                   if (event.step === 'generate_email' && event.status === 'done' && event.detail) {
                     accountEmails[event.accountName] = event.detail;
                     if (accountHeaders[event.accountName]) {
-                      accountHeaders[event.accountName].textContent = '📦 ' + event.detail;
+                      accountHeaders[event.accountName].textContent = event.detail;
                     }
                   }
 
@@ -328,14 +348,14 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                     var header = document.createElement('div');
                     header.className = 'text-cyan-400 font-bold text-xs pt-2 pb-1';
                     var displayEmail = accountEmails[event.accountName] || event.accountName;
-                    header.textContent = '📦 ' + displayEmail;
+                    header.textContent = displayEmail;
                     accountHeaders[event.accountName] = header;
                     logs.appendChild(header);
                   }
 
-                  var icon = event.status === 'running' ? '⏳' :
-                             event.status === 'done' ? '✅' :
-                             event.step === 'error' || event.step === 'cancelled' ? '❌' : '⏳';
+                  var icon = event.status === 'running' ? '<i class="fa-solid fa-spinner fa-spin"></i>' :
+                             event.status === 'done' ? '<i class="fa-solid fa-circle-check"></i>' :
+                             event.step === 'error' || event.step === 'cancelled' ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-solid fa-spinner fa-spin"></i>';
 
                   var color = event.step === 'error' || event.step === 'cancelled' ? 'text-red-400' :
                               event.status === 'done' ? 'text-emerald-400' :

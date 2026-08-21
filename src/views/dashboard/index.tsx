@@ -56,16 +56,16 @@ const UserDashboard: FC<DashboardProps> = ({ user, stats, autoPostActive = false
         <h2 class="text-lg font-semibold text-slate-800 mb-4">Quick Actions</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <a href="/post" class="flex items-center gap-2 p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition text-sm font-medium text-blue-700">
-            <span class="text-lg">📤</span> Post Sekarang
+            <i class="fa-solid fa-paper-plane text-lg"></i> Post Sekarang
           </a>
           <a href="/generate" class="flex items-center gap-2 p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition text-sm font-medium text-purple-700">
-            <span class="text-lg">✨</span> Generate Konten
+            <i class="fa-solid fa-wand-magic-sparkles text-lg"></i> Generate Konten
           </a>
           <a href="/affiliate-link" class="flex items-center gap-2 p-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition text-sm font-medium text-emerald-700">
-            <span class="text-lg">🔗</span> Tambah Link
+            <i class="fa-solid fa-link text-lg"></i> Tambah Link
           </a>
           <a href="/create-bunsos" class="flex items-center gap-2 p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition text-sm font-medium text-amber-700">
-            <span class="text-lg">➕</span> Buat Akun
+            <i class="fa-solid fa-circle-plus text-lg"></i> Buat Akun
           </a>
         </div>
       </div>
