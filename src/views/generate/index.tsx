@@ -16,13 +16,14 @@ interface GroupConfig {
 interface GeneratePageProps {
   user: AuthUser;
   groups: GroupConfig[];
+  personas: Array<{ id: string; name: string }>;
   autoPostActive: boolean;
   autoGenerateActive: boolean;
   error?: string;
   success?: string;
 }
 
-const GeneratePage: FC<GeneratePageProps> = ({ user, groups, autoPostActive, autoGenerateActive, error, success }) => {
+const GeneratePage: FC<GeneratePageProps> = ({ user, groups, personas, autoPostActive, autoGenerateActive, error, success }) => {
   const activeGroups = groups.filter((g) => g.autoGenerateEnabled);
   const personaGroups = groups.filter((g) => g.isPersona);
   const personaGroupsJson = JSON.stringify(
@@ -103,6 +104,13 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, autoPostActive, aut
 
                     {/* Generate Content Section */}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Persona AI</label>
+                        <select id="generatePersonaSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <option value="">— Pilih persona —</option>
+                          {personas.map((persona) => <option value={persona.id}>{persona.name}</option>)}
+                        </select>
+                      </div>
                       <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Topik / Produk</label>
                         <textarea
@@ -287,8 +295,10 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, autoPostActive, aut
 
         document.getElementById('generatePersonaCaptionBtn')?.addEventListener('click', function() {
           var group = document.getElementById('personaGroupSelect').value;
+          var personaId = document.getElementById('generatePersonaSelect').value;
           var topic = document.getElementById('personaTopic').value.trim();
           if (!group) { showToast('error', 'Error', 'Pilih grup persona terlebih dahulu'); return; }
+          if (!personaId) { showToast('error', 'Error', 'Pilih Persona AI terlebih dahulu'); return; }
           if (!topic) { showToast('error', 'Error', 'Isi topik atau link produk'); return; }
 
           var btn = this;
@@ -298,7 +308,7 @@ const GeneratePage: FC<GeneratePageProps> = ({ user, groups, autoPostActive, aut
           fetch('/api/generate/caption', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ groupName: group, topic: topic })
+            body: JSON.stringify({ groupName: group, personaId: personaId, topic: topic, affiliateLink: document.getElementById('personaLink').value.trim() })
           })
           .then(function(r) { return r.json(); })
           .then(function(data) {

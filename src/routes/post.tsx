@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { authMiddleware, getSession } from "../middleware/auth";
-import { getAffiliateAccounts, getConnectionsByAccount, getSocialPosts, createSocialPost, deleteSocialPost, getUserPersonas, getGroupAutoPostConfigs, ensureGroupAutoPostConfig, updateGroupAutoPostConfig, hasAnyAutoPostEnabled, hasAnyAutoGenerateEnabled, getPostLogs } from "../lib/db";
+import { getAffiliateAccounts, getConnectionsByAccount, getSocialPosts, createSocialPost, deleteSocialPost, getUserPersonas, getGroupAutoPostConfig, getGroupAutoPostConfigs, ensureGroupAutoPostConfig, updateGroupAutoPostConfig, hasAnyAutoPostEnabled, hasAnyAutoGenerateEnabled, getPostLogs } from "../lib/db";
 import { sendPostToGroup } from "../lib/auto-post";
+import { generatePersonaCaption } from "../lib/persona-caption";
 import PostPage from "../views/post/index";
 import PostLogsPage from "../views/post/logs";
 
@@ -125,11 +126,32 @@ postRoutes.post("/api/post/save", authMiddleware, async (c) => {
   }
 });
 
-postRoutes.post("/api/post/generate-caption", authMiddleware, (c) => {
-  return c.json({
-    success: false,
-    error: "AI caption generation belum tersedia. Hubungkan persona AI terlebih dahulu.",
-  });
+postRoutes.post("/api/post/generate-caption", authMiddleware, async (c) => {
+  const user = getSession(c)!;
+  const body = await c.req.json();
+  const personaId = String(body.personaId || "").trim();
+  const groupName = String(body.groupName || "").trim();
+  const topic = String(body.topic || "").trim();
+  if (!personaId || !groupName || !topic) {
+    return c.json({ success: false, error: "Grup, persona, dan topik harus diisi" }, 400);
+  }
+  const ownsPersona = getUserPersonas(user.id).some((persona) => persona.persona_id === personaId);
+  const ownsGroup = getAffiliateAccounts(user.id).some((account) => (account.identity || "Uncategorized") === groupName);
+  if (!ownsPersona || !ownsGroup) {
+    return c.json({ success: false, error: "Grup atau persona tidak ditemukan" }, 404);
+  }
+  try {
+    const caption = await generatePersonaCaption({
+      personaId,
+      groupName,
+      topic,
+      niche: getGroupAutoPostConfig(user.id, groupName)?.niche,
+      affiliateLink: String(body.affiliateLink || "").trim(),
+    });
+    return c.json({ success: true, caption });
+  } catch (e: any) {
+    return c.json({ success: false, error: e.message || "Gagal generate caption" }, 502);
+  }
 });
 
 postRoutes.delete("/api/post/:id", authMiddleware, (c) => {

@@ -345,6 +345,9 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
 
           document.getElementById('generateCaptionBtn').addEventListener('click', function() {
             var personaId = document.getElementById('personaSelect').value;
+            var groupName = document.getElementById('groupSelect').value;
+            if (!groupName) { showToast('error', 'Error', 'Pilih grup tujuan terlebih dahulu'); return; }
+            if (!personaId) { showToast('error', 'Error', 'Pilih Persona AI terlebih dahulu'); return; }
             var topic = prompt('Topik konten:');
             if (!topic) return;
             var btn = this;
@@ -354,7 +357,7 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
             fetch('/api/post/generate-caption', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ personaId: personaId || null, topic: topic })
+              body: JSON.stringify({ personaId: personaId, groupName: groupName, topic: topic, affiliateLink: document.getElementById('linkInput').value.trim() })
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
@@ -366,6 +369,9 @@ const PostPage: FC<PostPageProps> = ({ user, groups, groupConfigs, posts, person
               }
               if (data.comment) {
                 document.getElementById('commentInput').value = data.comment;
+              }
+              if (!data.caption) {
+                showToast('error', 'Error', data.error || 'Gagal generate caption');
               }
             })
             .catch(function() {
