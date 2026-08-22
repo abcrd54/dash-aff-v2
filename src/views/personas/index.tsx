@@ -22,7 +22,7 @@ const PersonaListPage: FC<PersonaListProps> = ({ user, serviceName, personas, er
 
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
         <h2 class="text-lg font-semibold text-slate-800 mb-4">Create Persona</h2>
-        <form method="POST" action="/personas" class="grid grid-cols-2 gap-4">
+        <form method="post" action="/personas" class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
             <input name="name" required placeholder="Maya" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
@@ -40,7 +40,7 @@ const PersonaListPage: FC<PersonaListProps> = ({ user, serviceName, personas, er
           </div>
           <div class="col-span-2">
             <label class="block text-sm font-medium text-slate-700 mb-1">Backstory</label>
-            <textarea name="backstory" rows="3" required placeholder="Cerita latar belakang persona..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <textarea name="backstory" rows={3} required placeholder="Cerita latar belakang persona..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Tone</label>
@@ -92,7 +92,7 @@ const PersonaListPage: FC<PersonaListProps> = ({ user, serviceName, personas, er
                   <a href={`/personas/${p.id}/chat`} class="text-xs px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 no-underline">
                     Chat
                   </a>
-                  <form method="POST" action={`/personas/${p.id}/delete`} style="display:inline" onsubmit="return confirm('Delete this persona?')">
+                  <form method="post" action={`/personas/${p.id}/delete`} style="display:inline" onsubmit="return confirm('Delete this persona?')">
                     <button class="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 cursor-pointer">
                       Delete
                     </button>

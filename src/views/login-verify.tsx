@@ -34,12 +34,12 @@ const VerifyOtpPage: FC<VerifyOtpProps> = ({ error }) => {
         <div class="w-full max-w-md">
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div class="text-center mb-8">
-              <img src="/images/logo.png" alt="Dashboard Management Affiliate" class="w-16 h-16 object-contain mx-auto mb-4" />
+              <img src="/images/icon-512.png" alt="Dashboard Management Affiliate" class="w-16 h-16 object-contain mx-auto mb-4" />
               <h1 class="text-2xl font-bold text-slate-900">Verifikasi OTP</h1>
               <p class="text-slate-500 text-sm mt-1">Kode 6 digit telah dikirim ke email Anda</p>
             </div>
 
-            <form method="POST" action="/login/verify-otp" class="space-y-5">
+            <form method="post" action="/login/verify-otp" class="space-y-5">
               <input type="hidden" name="user_id" value="" />
               <div>
                 <label for="otp" class="block text-sm font-medium text-slate-700 mb-1.5">
@@ -52,7 +52,7 @@ const VerifyOtpPage: FC<VerifyOtpProps> = ({ error }) => {
                   required
                   autofocus
                   inputmode="numeric"
-                  maxlength="6"
+                  maxlength={6}
                   autocomplete="one-time-code"
                   placeholder="000000"
                   class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"

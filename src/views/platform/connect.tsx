@@ -82,7 +82,7 @@ const PlatformConnectPage: FC<PlatformConnectProps> = ({ user, accounts, platfor
                                 <span class="text-[10px] text-slate-400">No platforms connected</span>
                               ) : (
                                 connectedPlatforms.map((c) => {
-                                  const info = PLATFORM_INFO[c.platform] || { label: c.platform.substring(0, 2), color: "text-white", bg: "bg-slate-500", icon: "?" };
+                                  const info = PLATFORM_INFO[c.platform] || { label: c.platform.substring(0, 2), color: "text-white", bg: "bg-slate-500" };
                                   return (
                                     <span class={`text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white ${info.bg.split(" ")[0]}`}>
                                       {info.label}
@@ -104,7 +104,7 @@ const PlatformConnectPage: FC<PlatformConnectProps> = ({ user, accounts, platfor
                           <div class="flex gap-2" style="min-width: max-content;">
                           {platforms.filter((p) => ["TWITTER", "FACEBOOK", "THREADS", "INSTAGRAM", "TIKTOK", "PINTEREST"].includes(p)).map((platform) => {
                             const conn = acc.connections.find((c) => c.platform === platform);
-                            const info = PLATFORM_INFO[platform] || { label: platform.substring(0, 2), color: "text-slate-600", bg: "bg-slate-100", icon: "?" };
+                            const info = PLATFORM_INFO[platform] || { label: platform.substring(0, 2), color: "text-slate-600", bg: "bg-slate-100" };
                             const isConnected = conn?.status === "connected";
                             const hasChannel = conn?.channel_id;
                             const needsChannel = isConnected && !hasChannel;

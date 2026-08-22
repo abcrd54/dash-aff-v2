@@ -19,35 +19,35 @@ interface SidebarLink {
 }
 
 const adminLinks: SidebarLink[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
-  { href: "/admin/users", label: "Users", icon: "users" },
-  { href: "/account", label: "Akun Saya", icon: "circle-user-round" },
+  { href: "/dashboard", label: "Dashboard", icon: "fa-table-columns" },
+  { href: "/admin/users", label: "Users", icon: "fa-users" },
+  { href: "/account", label: "Akun Saya", icon: "fa-circle-user" },
 ];
 
 const userLinks = (autoPostActive: boolean, autoGenerateActive: boolean): SidebarLink[] => [
-  { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
-  { href: "/create-bunsos", label: "Management Bundle Social", icon: "package",
+  { href: "/dashboard", label: "Dashboard", icon: "fa-table-columns" },
+  { href: "/create-bunsos", label: "Management Bundle Social", icon: "fa-box",
     children: [
-      { href: "/create-bunsos", label: "Auto Create Bunsoc", icon: "zap" },
-      { href: "/platform/connect", label: "Platform Connect", icon: "plug" },
+      { href: "/create-bunsos", label: "Auto Create Bunsoc", icon: "fa-bolt" },
+      { href: "/platform/connect", label: "Platform Connect", icon: "fa-plug" },
     ],
   },
-  { href: "/personas", label: "Akun Personal", icon: "user-round-pen" },
-  { href: "/affiliate-link", label: "Link Affiliate", icon: "link" },
-  { href: "/post", label: "Management Post", icon: "send",
+  { href: "/personas", label: "Akun Personal", icon: "fa-user-pen" },
+  { href: "/affiliate-link", label: "Link Affiliate", icon: "fa-link" },
+  { href: "/post", label: "Management Post", icon: "fa-paper-plane",
     badge: autoPostActive ? "Auto Post ON" : "Auto Post OFF",
     badgeColor: autoPostActive ? "bg-emerald-500" : "bg-slate-400",
     children: [
-      { href: "/post", label: "Compose & Post", icon: "send" },
-      { href: "/post-logs", label: "Riwayat Post", icon: "history" },
+      { href: "/post", label: "Compose & Post", icon: "fa-paper-plane" },
+      { href: "/post-logs", label: "Riwayat Post", icon: "fa-clock-rotate-left" },
     ],
   },
-  { href: "/generate", label: "Generate Konten", icon: "sparkles",
+  { href: "/generate", label: "Generate Konten", icon: "fa-wand-magic-sparkles",
     badge: autoGenerateActive ? "Auto Scrape ON" : "Auto Scrape OFF",
     badgeColor: autoGenerateActive ? "bg-emerald-500" : "bg-slate-400",
   },
-  { href: "/settings", label: "Settings", icon: "sliders-horizontal" },
-  { href: "/account", label: "Akun Saya", icon: "circle-user-round" },
+  { href: "/settings", label: "Settings", icon: "fa-sliders" },
+  { href: "/account", label: "Akun Saya", icon: "fa-circle-user" },
 ];
 
 const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGenerateActive }) => {
@@ -66,7 +66,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
       >
         <div class="flex items-center justify-between px-5 h-16 border-b border-slate-700/50">
           <div class="flex items-center gap-3">
-            <img src="/images/logo.png" alt="Logo" class="w-9 h-9 object-contain flex-shrink-0" />
+            <img src="/images/icon-512.png" alt="Logo" class="w-9 h-9 object-contain flex-shrink-0" />
             <span class="text-white font-semibold text-base">Dashboard Management Affiliate</span>
           </div>
           <button
@@ -74,7 +74,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
             data-sidebar-close
             class="lg:hidden text-slate-400 hover:text-white cursor-pointer"
           >
-            <i data-lucide="x" class="w-5 h-5" />
+            <i class="fa-solid fa-xmark w-5 h-5"></i>
           </button>
         </div>
 
@@ -92,13 +92,13 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
                     aria-expanded={expanded ? "true" : "false"}
                     class={`sidebar-link w-full text-left ${isParentActive ? "active" : ""}`}
                   >
-                    <i data-lucide={link.icon} class="w-5 h-5 flex-shrink-0" />
+                    <i class={`fa-solid ${link.icon} w-5 h-5 flex-shrink-0`}></i>
                     <span class="flex-1">{link.label}</span>
                     <span data-sidebar-collapsed-icon class={`flex-shrink-0 flex ${expanded ? "hidden" : ""}`}>
-                      <i data-lucide="chevron-right" class="w-4 h-4" />
+                      <i class="fa-solid fa-chevron-right w-4 h-4"></i>
                     </span>
                     <span data-sidebar-expanded-icon class={`flex-shrink-0 flex ${expanded ? "" : "hidden"}`}>
-                      <i data-lucide="chevron-down" class="w-4 h-4" />
+                      <i class="fa-solid fa-chevron-down w-4 h-4"></i>
                     </span>
                   </button>
                   <div data-sidebar-submenu class={`ml-4 space-y-1 mt-1 ${expanded ? "" : "hidden"}`}>
@@ -108,7 +108,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
                         class={`sidebar-link text-sm ${currentPath === child.href || currentPath.startsWith(child.href) ? "active" : ""}`}
                         data-sidebar-close-mobile
                       >
-                        <i data-lucide={child.icon} class="w-4 h-4 flex-shrink-0" />
+                        <i class={`fa-solid ${child.icon} w-4 h-4 flex-shrink-0`}></i>
                         <span>{child.label}</span>
                       </a>
                     ))}
@@ -122,7 +122,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
                 class={`sidebar-link ${currentPath === link.href || (link.href !== "/dashboard" && currentPath.startsWith(link.href)) ? "active" : ""}`}
                 data-sidebar-close-mobile
               >
-                <i data-lucide={link.icon} class="w-5 h-5 flex-shrink-0" />
+                <i class={`fa-solid ${link.icon} w-5 h-5 flex-shrink-0`}></i>
                 <span class="flex-1">{link.label}</span>
                 {link.badge && (
                   <span class={`${link.badgeColor || "bg-slate-400"} text-white text-[9px] px-1.5 py-0.5 rounded-full font-medium leading-none`}>
@@ -139,7 +139,7 @@ const Sidebar: FC<SidebarProps> = ({ user, currentPath, autoPostActive, autoGene
             href="/logout"
             class="sidebar-link text-red-400 hover:text-red-300 hover:bg-red-900/20"
           >
-            <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0" />
+            <i class="fa-solid fa-right-from-bracket w-5 h-5 flex-shrink-0"></i>
             <span>Logout</span>
           </a>
         </div>

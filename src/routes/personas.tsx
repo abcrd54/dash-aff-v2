@@ -10,27 +10,18 @@ const personasRoutes = new Hono();
 personasRoutes.get("/personas", authMiddleware, async (c) => {
   const user = getSession(c)!;
   const services = getServices();
-
-  if (services.length === 0) {
-    return c.html(<PersonaListPage user={user} serviceName="No Service" personas={[]} error="No services configured. Check .env" />);
-  }
-
-  const serviceName = services[0].slug;
+  const serviceName = services[0]?.slug || "No Service";
   let personas: any[] = [];
   let error = "";
 
-  for (const svc of services) {
-    if (svc.slug === "aff-personal") {
-      try {
-        const aff = getServiceClient(svc.slug);
-        const allPersonas = await aff.getJSON<any[]>("/api/personas");
-        const userPersonas = getUserPersonas(user.id);
-        const ownedIds = new Set(userPersonas.map(p => p.persona_id));
-        const owned = allPersonas.filter((p: any) => ownedIds.has(p.id));
-        personas = personas.concat(owned);
-      } catch (e: any) {
-        error = e.message;
-      }
+  for (const service of services) {
+    if (service.slug !== "aff-personal") continue;
+    try {
+      const allPersonas = await getServiceClient(service.slug).getJSON<any[]>("/api/personas");
+      const ownedIds = new Set(getUserPersonas(user.id).map((persona) => persona.persona_id));
+      personas = personas.concat(allPersonas.filter((persona: any) => ownedIds.has(persona.id)));
+    } catch (e: any) {
+      error = e.message;
     }
   }
 
@@ -42,7 +33,7 @@ personasRoutes.post("/personas", authMiddleware, async (c) => {
   const body = await c.req.parseBody();
   const name = String(body.name || "").trim();
   const type = String(body.type || "personal");
-  const traits = String(body.traits || "ramah").split(",").map(s => s.trim()).filter(Boolean);
+  const traits = String(body.traits || "ramah").split(",").map((trait) => trait.trim()).filter(Boolean);
   const backstory = String(body.backstory || "").trim();
   const tone = String(body.tone || "hangat");
   const language = String(body.language || "indonesia");
@@ -52,28 +43,30 @@ personasRoutes.post("/personas", authMiddleware, async (c) => {
   }
 
   try {
-    const aff = getServiceClient("aff-personal");
-    const config: any = { type, name, traits: traits.length > 0 ? traits : ["umum"], backstory, tone, language };
-    const created = await aff.postJSON<any>("/api/personas", config);
+    const created = await getServiceClient("aff-personal").postJSON<any>("/api/personas", {
+      type,
+      name,
+      traits: traits.length > 0 ? traits : ["umum"],
+      backstory,
+      tone,
+      language,
+    });
     linkUserPersona(user.id, created.id, "aff-personal", name);
   } catch (e: any) {
     return c.html(<PersonaListPage user={user} serviceName="aff-personal" personas={[]} error={e.message} />);
   }
-
   return c.redirect("/personas");
 });
 
 personasRoutes.post("/personas/:id/delete", authMiddleware, async (c) => {
   const user = getSession(c)!;
   const personaId = c.req.param("id");
+  if (!personaId) return c.redirect("/personas");
   const owner = getPersonaOwner(personaId);
-  if (!owner || owner.user_id !== user.id) {
-    return c.redirect("/personas");
-  }
+  if (!owner || owner.user_id !== user.id) return c.redirect("/personas");
 
   try {
-    const aff = getServiceClient("aff-personal");
-    await aff.deleteJSON(`/api/personas/${personaId}`);
+    await getServiceClient("aff-personal").deleteJSON(`/api/personas/${personaId}`);
   } catch (e: any) {
     if (!e.message?.includes("404")) return c.redirect("/personas");
   }

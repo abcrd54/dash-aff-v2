@@ -1,7 +1,9 @@
+import { requiredEnv, requiredHttpUrl } from "./env";
+
 export function getKumailConfig() {
   return {
-    base_url: process.env.KUMAIL_URL || "http://localhost:3010",
-    api_key: process.env.KUMAIL_API_KEY || "dev-key",
+    base_url: requiredHttpUrl("KUMAIL_URL"),
+    api_key: requiredEnv("KUMAIL_API_KEY"),
   };
 }
 
@@ -32,9 +34,8 @@ export interface KumailResponse<T> {
   error?: { code: string; message: string; details: string };
 }
 
-const config = getKumailConfig();
-
 async function request<T>(path: string, init?: RequestInit): Promise<KumailResponse<T>> {
+  const config = getKumailConfig();
   const res = await fetch(`${config.base_url}${path}`, {
     ...init,
     headers: {

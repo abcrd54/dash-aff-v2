@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "trap 'kill 0' EXIT; bunx tailwindcss -i ./src/input.css -o ./public/css/main.css --minify --watch & bun run --watch src/index.tsx",
     "build:css": "bunx tailwindcss -i ./src/input.css -o ./public/css/main.css --minify",
-    "start": "bun run build:css && bun run src/index.tsx"
+    "start": "bun run build:css && bun run src/index.tsx",
+    "check": "bun run scripts/check.ts",
+    "smoke:services": "bun run scripts/smoke-services.ts"
   },
   "dependencies": {
     "hono": "^4.6.14",

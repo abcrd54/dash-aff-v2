@@ -50,7 +50,7 @@ const SettingsPage: FC<SettingsProps> = ({ user, jadiapaConnected, jadiapaEmail,
               {jadiapaConnected ? "Connected" : "Not Connected"}
             </span>
           </div>
-          <form method="POST" action="/settings/jadiapa-auth" class="space-y-4">
+          <form method="post" action="/settings/jadiapa-auth" class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">Email jadiapa.com</label>
               <input

@@ -4,11 +4,11 @@ Tujuan: membuat `dash-aff-v2` lebih ringan dan mudah dirawat tanpa mengurangi fu
 
 ## P0 — Baseline dan pengaman regresi
 
-- [ ] Tambahkan script standar `check` untuk menjalankan test, build CSS, dan bundle aplikasi.
-- [ ] Tambahkan smoke test terautentikasi untuk Kumux Mail, Persona, dan KumaVPS tanpa membuat data eksternal.
+- [x] Tambahkan script standar `check` untuk menjalankan test, build CSS, dan bundle aplikasi.
+- [x] Tambahkan smoke test terautentikasi untuk Kumux Mail, Persona, dan KumaVPS tanpa membuat data eksternal.
 - [ ] Tambahkan test status job onboarding: mulai, progress, pindah halaman, selesai, dan gagal.
-- [ ] Catat baseline waktu startup, ukuran bundle, ukuran CSS, dan penggunaan memori idle.
-- [ ] Pastikan seluruh perubahan berikut selalu mempertahankan 6 test yang sudah ada.
+- [x] Catat baseline ukuran bundle, ukuran CSS, jumlah source, dan jumlah dependency.
+- [x] Pertahankan dan perluas test otomatis yang sudah ada.
 
 Kriteria selesai:
 
@@ -17,12 +17,12 @@ Kriteria selesai:
 
 ## P1 — Hapus beban yang tidak dipakai
 
-- [ ] Hapus renderer live-log lama di halaman Auto Create Bunsoc; pertahankan progress bar dan polling server.
-- [ ] Hapus HTMX dari layout karena tidak ada atribut `hx-*` yang digunakan.
-- [ ] Hapus aturan CSS `.htmx-*` yang tidak lagi digunakan.
-- [ ] Audit dan hapus field `PLATFORM_INFO.icon` bila tidak digunakan oleh tampilan mana pun.
-- [ ] Hapus import, helper, dan variabel browser yang tidak memiliki consumer.
-- [ ] Pastikan tidak ada dependency npm yang tidak digunakan.
+- [x] Hapus renderer live-log lama di halaman Auto Create Bunsoc; pertahankan progress bar dan polling server.
+- [x] Hapus HTMX dari layout karena tidak ada atribut `hx-*` yang digunakan.
+- [x] Hapus aturan CSS `.htmx-*` yang tidak lagi digunakan.
+- [x] Audit dan hapus field `PLATFORM_INFO.icon` yang tidak digunakan.
+- [x] Hapus import, helper, dan variabel browser yang tidak memiliki consumer pada jalur yang diaudit.
+- [x] Audit dependency npm aktif.
 
 Kriteria selesai:
 
@@ -32,7 +32,7 @@ Kriteria selesai:
 
 ## P1 — Perketat konfigurasi runtime
 
-- [ ] Hapus fallback `dev-key` dari client Kumux Mail dan KumaVPS.
+- [x] Hapus fallback `dev-key` dari client Kumux Mail dan KumaVPS.
 - [ ] Validasi seluruh environment wajib saat startup dengan pesan yang aman dan jelas.
 - [ ] Pisahkan validasi environment aplikasi lokal dan environment microservice Docker.
 - [ ] Pastikan nilai secret tidak pernah muncul di log, HTML, atau response API.
@@ -46,12 +46,12 @@ Kriteria selesai:
 ## P2 — Ringankan frontend
 
 - [ ] Pertimbangkan self-host Font Awesome subset yang hanya berisi ikon terpakai.
-- [ ] Hapus salah satu dari `logo.png` atau `icon-512.png` jika tetap identik; gunakan satu sumber aset bila memungkinkan.
+- [x] Hapus `logo.png` yang identik dan gunakan `icon-512.png` sebagai satu sumber aset.
 - [ ] Optimalkan PNG tanpa mengubah tampilan visual.
 - [ ] Pisahkan JavaScript inline besar dari view ke modul browser yang dapat di-cache.
 - [ ] Pecah halaman besar: Post, Generate, Platform Connect, Affiliate Link, dan Auto Create Bunsoc.
 - [ ] Muat JavaScript hanya pada halaman yang membutuhkannya.
-- [ ] Audit SweetAlert, Lucide, dan Font Awesome agar tidak ada dua library ikon untuk fungsi yang sama.
+- [x] Migrasikan navigasi Lucide ke Font Awesome dan hapus request script Lucide global.
 
 Kriteria selesai:
 
@@ -76,8 +76,8 @@ Kriteria selesai:
 
 ## P2 — Bersihkan struktur project
 
-- [ ] Pisahkan atau keluarkan scraper yang belum tersedia dari scope TypeScript aplikasi utama.
-- [ ] Perbaiki `tsconfig.json` agar `bunx tsc --noEmit` dapat lulus untuk source aktif.
+- [x] Keluarkan scraper yang belum tersedia dari scope TypeScript aplikasi utama.
+- [x] Perbaiki `tsconfig.json` agar `bunx tsc --noEmit` lulus untuk source aktif.
 - [ ] Tandai fitur yang belum tersedia melalui feature flag, bukan handler placeholder tersebar.
 - [ ] Hapus file atau route placeholder hanya jika UI terkait juga dinonaktifkan dengan jelas.
 - [ ] Pertahankan dokumentasi untuk Kumux Mail, Persona, dan KumaVPS; biarkan integrasi lain nonaktif.

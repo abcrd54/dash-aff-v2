@@ -9,9 +9,7 @@ const adminUserRoutes = new Hono();
 adminUserRoutes.get("/admin/users", authMiddleware, adminMiddleware, (c) => {
   const user = getSession(c)!;
   const users = getAllUsers();
-  const error = c.req.query("error") || "";
-  const success = c.req.query("success") || "";
-  return c.html(<UsersPage user={user} users={users} error={error} success={success} />);
+  return c.html(<UsersPage user={user} users={users} />);
 });
 
 adminUserRoutes.post("/admin/users", authMiddleware, adminMiddleware, async (c) => {

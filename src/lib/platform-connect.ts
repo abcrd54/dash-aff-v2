@@ -161,8 +161,8 @@ export async function checkAndSyncConnection(
     status: "connected",
     social_account_id: sa.id,
     username: sa.username,
-    channel_id: sa.channelId,
-    channel_name: sa.channelName,
+    channel_id: sa.channelId || undefined,
+    channel_name: sa.channelName || undefined,
     channels: JSON.stringify(sa.channels || []),
   });
 

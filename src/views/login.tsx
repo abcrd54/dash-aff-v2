@@ -38,7 +38,7 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
         <div class="w-full max-w-md">
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div class="text-center mb-8">
-              <img src="/images/logo.png" alt="Dashboard Management Affiliate" class="w-16 h-16 object-contain mx-auto mb-4" />
+              <img src="/images/icon-512.png" alt="Dashboard Management Affiliate" class="w-16 h-16 object-contain mx-auto mb-4" />
               <h1 class="text-2xl font-bold text-slate-900">Dashboard Management Affiliate</h1>
               <p class="text-slate-500 text-sm mt-1">Silakan login untuk melanjutkan</p>
             </div>
@@ -67,7 +67,7 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
               </p>
             </div>
 
-            <form id="loginForm" method="POST" action="/login" class="space-y-5">
+            <form id="loginForm" method="post" action="/login" class="space-y-5">
               <div>
                 <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">
                   Email
@@ -101,7 +101,7 @@ const LoginPage: FC<LoginProps> = ({ error, showSetEmail, showContactAdmin, user
                     type="button"
                     onclick="const p=document.getElementById('password');const oe=document.getElementById('eye-off');const e=document.getElementById('eye');if(p.type==='password'){p.type='text';oe.classList.add('hidden');e.classList.remove('hidden')}else{p.type='password';oe.classList.remove('hidden');e.classList.add('hidden')}"
                     class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                    tabindex="-1"
+                    tabindex={-1}
                   >
                     <svg id="eye-off" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                     <svg id="eye" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>

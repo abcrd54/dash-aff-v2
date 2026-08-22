@@ -35,7 +35,7 @@ const ChatPage: FC<ChatPageProps> = ({ user, personaId, personaName, persona, ws
           <div class="flex gap-2">
             <textarea
               id="chat-input"
-              rows="1"
+              rows={1}
               placeholder={`Chat with ${personaName}...`}
               class="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"

@@ -256,13 +256,9 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
         // Check on page load
         refreshAccounts();
 
-        var accountEmails = {};
-        var accountHeaders = {};
-
         function startBatch() {
           var btn = document.getElementById('generateBtn');
           var count = Number(document.getElementById('countSelect').value);
-          var logs = document.createElement('div');
           var status = document.getElementById('jobStatus');
           var errorBox = document.getElementById('progressError');
           var stepOrder = ['generate_email', 'signup', 'poll_inbox', 'verify_link', 'get_token', 'setup_profile', 'get_org', 'create_api_key', 'create_team', 'complete'];
@@ -330,61 +326,11 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                 var lines = buffer.split('\\n');
                 buffer = lines.pop() || '';
 
-                var lastAccount = '';
                 for (var i = 0; i < lines.length; i++) {
                   var line = lines[i];
                   if (!line.startsWith('data: ')) continue;
                   var event = JSON.parse(line.slice(6));
                   renderBatchProgress(event);
-
-                  // Capture email from generate_email step
-                  if (event.step === 'generate_email' && event.status === 'done' && event.detail) {
-                    accountEmails[event.accountName] = event.detail;
-                    if (accountHeaders[event.accountName]) {
-                      accountHeaders[event.accountName].textContent = event.detail;
-                    }
-                  }
-
-                  if (event.accountName !== lastAccount) {
-                    lastAccount = event.accountName;
-                    var header = document.createElement('div');
-                    header.className = 'text-cyan-400 font-bold text-xs pt-2 pb-1';
-                    var displayEmail = accountEmails[event.accountName] || event.accountName;
-                    header.textContent = displayEmail;
-                    accountHeaders[event.accountName] = header;
-                    logs.appendChild(header);
-                  }
-
-                  var icon = event.status === 'running' ? '<i class="fa-solid fa-spinner fa-spin"></i>' :
-                             event.status === 'done' ? '<i class="fa-solid fa-circle-check"></i>' :
-                             event.step === 'error' || event.step === 'cancelled' ? '<i class="fa-solid fa-circle-xmark"></i>' : '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-                  var color = event.step === 'error' || event.step === 'cancelled' ? 'text-red-400' :
-                              event.status === 'done' ? 'text-emerald-400' :
-                              'text-blue-400';
-
-                  var label = {
-                    generate_email: 'Generate Email',
-                    signup: 'Signup',
-                    poll_inbox: 'Polling Inbox',
-                    verify_link: 'Verify Email',
-                    get_token: 'Get Token',
-                    setup_profile: 'Setup Profile',
-                    get_org: 'Get Organization',
-                    create_api_key: 'Create API Key',
-                    create_team: 'Create Team',
-                    complete: 'Complete',
-                    cancelled: 'Cancelled',
-                    error: 'Error'
-                  }[event.step] || event.step;
-
-                  var entry = document.createElement('div');
-                  entry.className = 'ml-3 ' + color;
-                  entry.textContent = icon + ' ' + label;
-                  if (event.detail) {
-                    entry.textContent += ' \\u2192 ' + event.detail;
-                  }
-                  logs.appendChild(entry);
 
                   // Update account list on complete
                   if (event.step === 'complete') {
@@ -392,7 +338,6 @@ const CreateBunsosPage: FC<CreateBunsosProps> = ({ user, accounts }) => {
                   }
                 }
 
-                logs.scrollTop = logs.scrollHeight;
                 read();
               });
             }

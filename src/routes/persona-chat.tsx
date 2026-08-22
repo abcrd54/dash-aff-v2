@@ -11,6 +11,7 @@ const chatRoutes = new Hono();
 chatRoutes.get("/personas/:id/chat", authMiddleware, async (c) => {
   const user = getSession(c)!;
   const personaId = c.req.param("id");
+  if (!personaId) return c.text("Persona not found", 404);
 
   const owner = getPersonaOwner(personaId);
   if (!owner || owner.user_id !== user.id) {
@@ -19,17 +20,9 @@ chatRoutes.get("/personas/:id/chat", authMiddleware, async (c) => {
 
   try {
     const aff = getServiceClient("aff-personal");
-    const service = getServiceBySlug("aff-personal")!;
     const persona = await aff.getJSON<any>(`/api/personas/${personaId}`);
     const wsUrl = `/api/personas/${encodeURIComponent(personaId)}/chat/ws`;
-
-    return c.html(<ChatPage
-      user={user}
-      personaId={personaId}
-      personaName={persona.name || personaId}
-      persona={persona}
-      wsUrl={wsUrl}
-    />);
+    return c.html(<ChatPage user={user} personaId={personaId} personaName={persona.name || personaId} persona={persona} wsUrl={wsUrl} />);
   } catch (e: any) {
     return c.html(<ChatPage user={user} personaId={personaId} personaName="Error" persona={{}} wsUrl="" error={e.message} />);
   }
@@ -38,6 +31,7 @@ chatRoutes.get("/personas/:id/chat", authMiddleware, async (c) => {
 chatRoutes.get("/api/personas/:id/chat/ws", authMiddleware, async (c, next) => {
   const user = getSession(c)!;
   const personaId = c.req.param("id");
+  if (!personaId) return c.text("Persona not found", 404);
   const owner = getPersonaOwner(personaId);
   if (!owner || owner.user_id !== user.id) return c.text("Forbidden", 403);
 

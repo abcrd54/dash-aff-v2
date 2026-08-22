@@ -10,11 +10,11 @@ export function getServiceClient(slug: string) {
 
   const makeUrl = (path: string) => `${service.base_url}${path}`;
 
-  const doFetch = async (init: RequestInit) => {
+  const doFetch = async (url: string, init: RequestInit) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS);
     try {
-      const res = await fetch(init.url as string, { ...init, signal: controller.signal });
+      const res = await fetch(url, { ...init, signal: controller.signal });
       return res;
     } catch (e: any) {
       if (e.name === "AbortError") throw new Error(`Request to "${slug}" timed out`);
@@ -26,9 +26,8 @@ export function getServiceClient(slug: string) {
 
   return {
     fetch: async (path: string, init?: RequestInit) => {
-      return doFetch({
+      return doFetch(makeUrl(path), {
         ...init,
-        url: makeUrl(path),
         headers: {
           "Content-Type": "application/json",
           "x-api-key": service.api_key,
@@ -38,9 +37,8 @@ export function getServiceClient(slug: string) {
     },
 
     getJSON: async <T>(path: string): Promise<T> => {
-      const res = await doFetch({
+      const res = await doFetch(makeUrl(path), {
         method: "GET",
-        url: makeUrl(path),
         headers: { "x-api-key": service.api_key },
       });
       if (!res.ok) {
@@ -55,9 +53,8 @@ export function getServiceClient(slug: string) {
     },
 
     postJSON: async <T>(path: string, body: unknown): Promise<T> => {
-      const res = await doFetch({
+      const res = await doFetch(makeUrl(path), {
         method: "POST",
-        url: makeUrl(path),
         headers: { "Content-Type": "application/json", "x-api-key": service.api_key },
         body: JSON.stringify(body),
       });
@@ -73,9 +70,8 @@ export function getServiceClient(slug: string) {
     },
 
     deleteJSON: async <T>(path: string): Promise<T> => {
-      const res = await doFetch({
+      const res = await doFetch(makeUrl(path), {
         method: "DELETE",
-        url: makeUrl(path),
         headers: { "x-api-key": service.api_key },
       });
       if (!res.ok) {

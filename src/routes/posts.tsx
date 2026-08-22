@@ -25,7 +25,7 @@ postRoutes.post("/posts", authMiddleware, async (c) => {
   const body = await c.req.parseBody();
   const title = String(body.title || "").trim();
   const content = String(body.body || "");
-  const status = String(body.status || "draft");
+  const status: "draft" | "published" = body.status === "published" ? "published" : "draft";
   const slug = String(body.slug || slugify(title));
 
   if (!title) {

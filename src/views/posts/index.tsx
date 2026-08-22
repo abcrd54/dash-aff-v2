@@ -69,7 +69,7 @@ const PostsPage: FC<PostsPageProps> = ({ user, posts }) => {
               ))}
               {posts.length === 0 && (
                 <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                  <td colspan={5} class="px-6 py-12 text-center text-slate-400">
                     Belum ada post.
                   </td>
                 </tr>
@@ -83,7 +83,7 @@ const PostsPage: FC<PostsPageProps> = ({ user, posts }) => {
         <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-4 sm:p-6" onclick="event.stopPropagation()">
           <h3 class="text-lg font-semibold text-slate-800 mb-4">Tambah Post Baru</h3>
           <form
-            method="POST"
+            method="post"
             action="/posts"
             onsubmit="closeCreatePostModal()"
             class="space-y-4"

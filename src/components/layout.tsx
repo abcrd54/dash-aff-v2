@@ -31,12 +31,9 @@ const Layout: FC<LayoutProps> = ({ user, title, currentPath, children, autoPostA
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
         <link rel="stylesheet" href="/css/main.css" />
-        <script src="https://unpkg.com/htmx.org@1.9.12" />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" />
-        <script src="https://unpkg.com/lucide@latest" />
         <script>{raw(`
           document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
             var btn = document.getElementById('sidebar-toggle-btn');
             if (btn) {
               btn.addEventListener('click', function() {

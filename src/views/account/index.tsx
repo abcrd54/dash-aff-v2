@@ -59,7 +59,7 @@ const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa, emai
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 class="text-lg font-semibold text-slate-800 mb-4">Atur Email</h3>
             <p class="text-sm text-slate-500 mb-4">Email diperlukan untuk verifikasi 2FA saat login.</p>
-            <form method="POST" action="/account/email" class="space-y-4">
+            <form method="post" action="/account/email" class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
                 <input
@@ -86,7 +86,7 @@ const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa, emai
             <p class="text-sm text-slate-500 mb-4">
               2FA Email OTP: {twoFactorEnabled ? <span class="text-emerald-600 font-medium">Aktif</span> : <span class="text-red-600 font-medium">Nonaktif</span>}
             </p>
-            <form method="POST" action="/account/two-factor" class="mt-0">
+            <form method="post" action="/account/two-factor" class="mt-0">
               <button
                 type="submit"
                 class={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${twoFactorEnabled ? "bg-red-100 hover:bg-red-200 text-red-700" : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"}`}
@@ -122,7 +122,7 @@ const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa, emai
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <h3 class="text-lg font-semibold text-slate-800 mb-4">Ganti Password</h3>
 
-          <form method="POST" action="/account/password" class="space-y-4">
+          <form method="post" action="/account/password" class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">Password Lama</label>
               <input
@@ -138,7 +138,7 @@ const AccountPage: FC<AccountPageProps> = ({ user, error, success, jadiapa, emai
                 type="password"
                 name="new_password"
                 required
-                minlength="6"
+                minlength={6}
                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

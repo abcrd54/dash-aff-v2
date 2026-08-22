@@ -1,7 +1,9 @@
+import { requiredEnv, requiredHttpUrl } from "./env";
+
 export function getBunsocialConfig() {
   return {
-    base_url: process.env.BUNSOCIAL_URL || "https://bunsocial.kumavps.my.id",
-    api_key: process.env.BUNSOCIAL_API_KEY || "dev-key",
+    base_url: requiredHttpUrl("BUNSOCIAL_URL"),
+    api_key: requiredEnv("BUNSOCIAL_API_KEY"),
   };
 }
 
@@ -12,9 +14,8 @@ interface BunsocialResponse<T> {
   error?: { code: string; message: string; details: string };
 }
 
-const config = getBunsocialConfig();
-
 async function request<T>(path: string, init?: RequestInit): Promise<BunsocialResponse<T>> {
+  const config = getBunsocialConfig();
   const res = await fetch(`${config.base_url}${path}`, {
     ...init,
     headers: {

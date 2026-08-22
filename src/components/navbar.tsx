@@ -14,7 +14,7 @@ const Navbar: FC<NavbarProps> = ({ user, title }) => {
           id="sidebar-toggle-btn"
           class="lg:hidden p-2 -ml-2 rounded-lg text-slate-500 hover:bg-slate-100 cursor-pointer"
         >
-          <i data-lucide="menu" class="w-5 h-5" />
+          <i class="fa-solid fa-bars w-5 h-5"></i>
         </button>
         <h1 class="text-base lg:text-lg font-semibold text-slate-800 truncate">{title}</h1>
       </div>
@@ -42,7 +42,7 @@ const Navbar: FC<NavbarProps> = ({ user, title }) => {
           class="ml-2 p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
           title="Logout"
         >
-          <i data-lucide="log-out" class="w-5 h-5" />
+          <i class="fa-solid fa-right-from-bracket w-5 h-5"></i>
         </a>
       </div>
     </header>
